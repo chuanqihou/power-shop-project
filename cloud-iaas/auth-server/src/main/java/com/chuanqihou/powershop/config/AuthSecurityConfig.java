@@ -19,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +39,9 @@ public class AuthSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
+    /**
+     * redis操作模板
+     */
     @Autowired
     private StringRedisTemplate redisTemplate;
 
@@ -155,9 +159,12 @@ public class AuthSecurityConfig extends WebSecurityConfigurerAdapter {
         return (request, response, authentication) -> {
             //获取token
             String auth = request.getHeader("Authorization");
-            String token = auth.replace(AuthConstants.BEARER, "").trim();
-            //从redis中删除
-            redisTemplate.delete(AuthConstants.TOKEN_REDIS_PREFIX + token);
+            //判断是否有token
+            if (StringUtils.hasText(auth)){
+                String token = auth.replace(AuthConstants.BEARER, "").trim();
+                //从redis中删除
+                redisTemplate.delete(AuthConstants.TOKEN_REDIS_PREFIX + token);
+            }
             //返回数据
             ResponseUtil.responseJson(response,Result.success());
         };

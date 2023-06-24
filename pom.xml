@@ -20,6 +20,7 @@
         <module>power-common</module>
         <module>power-business</module>
         <module>cloud-iaas/auth-server</module>
+        <module>power-common/common-core</module>
     </modules>
 
     <properties>

@@ -11,7 +11,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class GatewayServerApplication {
 
+    /**
+     * 网关服务启动入口
+     * @param args
+     */
     public static void main(String[] args) {
+        // 启动网关服务
         SpringApplication.run(GatewayServerApplication.class, args);
     }
 

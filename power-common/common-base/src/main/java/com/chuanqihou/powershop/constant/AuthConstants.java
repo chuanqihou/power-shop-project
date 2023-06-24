@@ -85,4 +85,9 @@ public class AuthConstants {
      * 登录类型
      */
     public static final String TYPE = "type";
+
+    /**
+     * 刷新token（token过期时间小于5分钟，则刷新token时间）
+     */
+    public static final Long TOKEN_REFRESH_EXPIRE_TIME = 5L*60;
 }

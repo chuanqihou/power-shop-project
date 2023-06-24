@@ -1,7 +1,6 @@
 package com.chuanqihou.powershop.util;
 
 import com.alibaba.fastjson.JSON;
-import com.chuanqihou.powershop.model.Result;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;

@@ -16,6 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -59,10 +60,16 @@ public class TokenCheckFilter implements GlobalFilter, Ordered {
         if (StringUtils.hasText(authorizationValue)) {
             String token = authorizationValue.replace(AuthConstants.BEARER, "");
             //使用redis效验token
-            String tokenValue = redisTemplate.opsForValue().get(AuthConstants.TOKEN_REDIS_PREFIX + token);
+            String redisKey = AuthConstants.TOKEN_REDIS_PREFIX + token;
+            String tokenValue = redisTemplate.opsForValue().get(redisKey);
             if (StringUtils.hasText(tokenValue)) {
-                //如果token存在,刷新token时间
-                redisTemplate.opsForValue().set(AuthConstants.TOKEN_REDIS_PREFIX + token, tokenValue, AuthConstants.TOKEN_EXPIRE, AuthConstants.TOKEN_EXPIRE_TIME_UNIT);
+                //获取token过期时间
+                Long expire = redisTemplate.getExpire(redisKey);
+                // 判读token是否过期以及是否需要刷新token
+                if (!ObjectUtils.isEmpty(expire) && expire != -2 && expire < AuthConstants.TOKEN_REFRESH_EXPIRE_TIME) {
+                    //如果token存在,并且token过期时间小于5分钟，则刷新token时间
+                    redisTemplate.expire(redisKey, AuthConstants.TOKEN_EXPIRE, AuthConstants.TOKEN_EXPIRE_TIME_UNIT);
+                }
                 //放行
                 return chain.filter(exchange);
             }

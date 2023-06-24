@@ -58,7 +58,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 //根据用户名查询数据库
                 LambdaQueryWrapper<LoginSysUser> queryWrapper = new LambdaQueryWrapper<>();
                 queryWrapper.eq(LoginSysUser::getUsername, username);
+                //查询用户信息
                 LoginSysUser loginSysUser = loginSysUserMapper.selectOne(queryWrapper);
+                //判断用户是否存在
                 if (!ObjectUtils.isEmpty(loginSysUser)) {
                     //查询该用户所具有的权限
                     Set<String> userPerms = loginSysUserMapper.getPermsByUserId(loginSysUser.getUserId());

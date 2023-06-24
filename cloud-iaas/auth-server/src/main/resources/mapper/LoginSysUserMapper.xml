@@ -32,4 +32,8 @@
         AND t1.type =2
   </select>
 
+  <select id="se" resultMap="BaseResultMap">
+    select user_id, username, password, email, mobile, status, create_user_id, create_time, shop_id from sys_user
+  </select>
+
 </mapper>
