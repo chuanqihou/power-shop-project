@@ -3,6 +3,7 @@ package com.chuanqihou.powershop.filter;
 import com.chuanqihou.powershop.constant.AuthConstants;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
+import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -15,10 +16,12 @@ import javax.servlet.http.HttpServletRequest;
  * @date 2023/6/20 20:52
  * @description Feign拦截器
  */
+@Component
 public class FeignInterceptor implements RequestInterceptor {
 
     /**
      * Feign拦截器
+     *
      * @param requestTemplate 请求模板
      */
     @Override

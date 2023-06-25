@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: manager-service
+  cloud:
+    nacos:
+      server-addr: localhost:8848
+      username: nacos
+      password: nacos
+      discovery:
+        namespace: powershop
+        group: A_GROUP
+      config:
+        namespace: ${spring.cloud.nacos.discovery.namespace}
+        group: ${spring.cloud.nacos.discovery.group}
+        prefix: ${spring.application.name}
+        file-extension: yml
+        shared-configs: # 公共配置文件
+          - dataId: application-shared-dev.yml
+            group: DEFAULT_GROUP
+            fileExtension: yml
+            refresh: true
+  profiles:
+    active: dev
+
+#server:
+#  port: 9011
+#spring:
+#  redis:
+#    host: localhost
+#    port: 6379
+#    password: 123456
+#    database: 0
+#swagger3:
+#  base-package: com.chuanqihou.powershop.controller
+#  name: powershop
+#  url: https://github.com/chuanqihou/power-shop-project
+#  email: chuanqihou@qq.com
+#  title: 后台管理系统接口
+#  description: 实现后台管理系统的所有接口
+#  license: Apache License 2.0
+#  license-url: https://github.com/chuanqihou
+#  terms-of-service-url: https://github.com/chuanqihou
+#  version: 1.0

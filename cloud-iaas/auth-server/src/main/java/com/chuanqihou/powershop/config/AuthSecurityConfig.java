@@ -109,14 +109,15 @@ public class AuthSecurityConfig extends WebSecurityConfigurerAdapter {
             // 将token存放到redis
             String redisKey = AuthConstants.TOKEN_REDIS_PREFIX + token;
             String redisValue = JSON.toJSONString(authentication);
-            redisTemplate.opsForValue().set(redisKey,redisValue,AuthConstants.TOKEN_EXPIRE,AuthConstants.TOKEN_EXPIRE_TIME_UNIT);
+            //Duration.ofSeconds();
+            redisTemplate.opsForValue().set(redisKey, redisValue, AuthConstants.TOKEN_EXPIRE, AuthConstants.TOKEN_EXPIRE_TIME_UNIT);
             // 封装数据
             Map<String, Object> map = new HashMap<>();
             map.put(AuthConstants.ACCESS_TOKEN, token);
             map.put(AuthConstants.EXPIRES_IN, AuthConstants.TOKEN_EXPIRE);
             map.put(AuthConstants.TYPE, AuthConstants.BEARER);
             // 返回token
-            ResponseUtil.responseJson(response,map);
+            ResponseUtil.responseJson(response, map);
         };
     }
 
@@ -180,90 +181,5 @@ public class AuthSecurityConfig extends WebSecurityConfigurerAdapter {
         // 使用BCrypt加密
         return new BCryptPasswordEncoder();
     }
-
-    /**
-     * 配置登出成功处理器
-     *
-     * @return 登出成功处理器
-     */
-/*    @Bean
-    public LogoutSuccessHandler logoutSuccessHandler() {
-        return (request, response, authentication) -> {
-            //获取token
-            String auth = request.getHeader("Authorization");
-            String token = auth.replace(AuthConstants.BEARER, "").trim();
-            //从redis中删除
-            redisTemplate.delete(AuthConstants.TOKEN_REDIS_PREFIX + token);
-            //返回数据
-            response.setCharacterEncoding("utf-8");
-            response.setContentType("application/json;charset=utf-8");
-            PrintWriter writer = response.getWriter();
-            writer.write(JSON.toJSONString(Result.success()));
-            writer.flush();
-            writer.close();
-        };
-    }*/
-
-    /**
-     * 配置登录失败处理器
-     *
-     * @return 登录失败处理器
-     */
-/*    @Bean
-    public AuthenticationFailureHandler authenticationFailureHandler() {
-        return (request, response, e) -> {
-            response.setCharacterEncoding("utf-8");
-            response.setContentType("application/json;charset=utf-8");
-            Result result = new Result();
-            result.setCode(HttpStatus.UNAUTHORIZED.value());
-
-            if (e instanceof LockedException) {
-                result.setMsg("账户被锁定，请联系管理员!");
-            } else if(e instanceof BadCredentialsException){
-                result.setMsg("用户名或密码错误，请重新登录失败！");
-            }else  if(e instanceof DisabledException){
-                result.setMsg("账户被禁用，请联系管理员！");
-            }else if(e instanceof AccountExpiredException){
-                result.setMsg("账户过期，请联系管理员！");
-            }else if(e instanceof CredentialsExpiredException){
-                result.setMsg("密码过期，请联系管理员！");
-            }else{
-                result.setMsg("登录失败！");
-            }
-            PrintWriter writer = response.getWriter();
-            writer.write(JSON.toJSONString(result));
-            writer.flush();
-            writer.close();
-        };
-    }*/
-
-    /**
-     * 配置登录成功处理器
-     *
-     * @return 登录成功处理器
-     */
-/*    @Bean
-    public AuthenticationSuccessHandler authenticationSuccessHandler() {
-        return (request, response, authentication) -> {
-            // 生成token
-            String token = UUID.randomUUID().toString().replace("-", "");
-            // 将token存放到redis
-            String redisKey = AuthConstants.TOKEN_REDIS_PREFIX + token;
-            String redisValue = JSON.toJSONString(authentication);
-            redisTemplate.opsForValue().set(redisKey,redisValue,AuthConstants.TOKEN_EXPIRE,AuthConstants.TOKEN_EXPIRE_TIME_UNIT);
-            // 封装数据
-            Map<String, Object> map = new HashMap<>();
-            map.put(AuthConstants.ACCESS_TOKEN, token);
-            map.put(AuthConstants.EXPIRES_IN, AuthConstants.TOKEN_EXPIRE);
-            map.put(AuthConstants.TYPE, AuthConstants.BEARER);
-            // 返回token
-            response.setCharacterEncoding("utf-8");
-            response.setContentType("application/json;charset=UTF-8");
-            PrintWriter writer = response.getWriter();
-            writer.write(JSON.toJSONString(map));
-            writer.flush();
-            writer.close();
-        };
-    }*/
 
 }

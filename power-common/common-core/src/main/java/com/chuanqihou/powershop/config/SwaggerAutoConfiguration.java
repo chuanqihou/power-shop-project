@@ -60,6 +60,4 @@ public class SwaggerAutoConfiguration {
                 build();    // 创建
     }
 
-
-
 }

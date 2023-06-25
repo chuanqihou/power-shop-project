@@ -32,14 +32,14 @@ public class AuthConstants {
     public static final String TOKEN_REDIS_PREFIX = "login_prefix:";
 
     /**
-     * token过期时间（默认 30 分钟）
+     * token过期时间（默认 120 分钟）
      */
-    public static final long TOKEN_EXPIRE = 30L;
+    public static final long TOKEN_EXPIRE = 120*60L;
 
     /**
-     * token过期时间单位（默认分钟）
+     * token过期时间单位（默认秒）
      */
-    public static final TimeUnit TOKEN_EXPIRE_TIME_UNIT = TimeUnit.MINUTES;
+    public static final TimeUnit TOKEN_EXPIRE_TIME_UNIT = TimeUnit.SECONDS;
 
     /**
      * 登录地址
@@ -89,5 +89,5 @@ public class AuthConstants {
     /**
      * 刷新token（token过期时间小于5分钟，则刷新token时间）
      */
-    public static final Long TOKEN_REFRESH_EXPIRE_TIME = 5L*60;
+    public static final Long TOKEN_REFRESH_EXPIRE_TIME = 10L*60;
 }

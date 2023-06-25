@@ -57,7 +57,7 @@ public class ResourceConfig extends WebSecurityConfigurerAdapter {
         // 返回拒绝访问处理器
         return (request, response, ex) -> {
             // 返回json数据
-            ResponseUtil.responseJson(response, Result.fails(HttpStatus.UNAUTHORIZED.value(), ex.getMessage()));
+            ResponseUtil.responseJson(response, Result.fails(HttpStatus.FORBIDDEN.value(), ex.getMessage()));
         };
     }
 

@@ -1,6 +1,7 @@
 package com.chuanqihou.powershop.util;
 
 import com.alibaba.fastjson.JSON;
+import org.springframework.http.MediaType;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -25,7 +26,7 @@ public class ResponseUtil {
             String jsonString = JSON.toJSONString(result);
             // 设置响应编码和类型
             response.setCharacterEncoding("UTF-8");
-            response.setContentType("application/json;charset=UTF-8");
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             writer = response.getWriter();
             // 响应结果
             writer.write(jsonString);

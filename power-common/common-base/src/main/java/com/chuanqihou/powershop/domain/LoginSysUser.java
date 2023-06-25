@@ -82,6 +82,9 @@ public class LoginSysUser implements Serializable, UserDetails {
     @TableField(exist = false)
     private Set<String> perms;
 
+    @TableField(exist = false)
+    private Set<GrantedAuthority> authorities;
+
     private static final long serialVersionUID = 1L;
 
     /**
@@ -102,13 +105,31 @@ public class LoginSysUser implements Serializable, UserDetails {
         this.perms = realPerms;
     }
 
+/*    *//**
+     * 设置用户权限
+     * @param perms 权限列表
+     *//*
+    public void setAuthorities(Set<String> perms) {
+        //将多个权限字符串拆分为Set集合
+        Set<String> realPerms = new HashSet<>();
+        //遍历权限列表
+        perms.forEach(perm -> {
+            //将权限列表中的每个权限字符串拆分为Set集合
+            String[] split = perm.split(",");
+            //将拆分后的权限字符串添加到Set集合中
+            realPerms.addAll(Arrays.asList(split));
+        });
+        //将Set集合设置为用户权限
+        this.perms = realPerms;
+    }*/
+
     /**
      * 获取用户权限
      * @return 权限列表
      */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return this.authorities;
     }
 
     /**

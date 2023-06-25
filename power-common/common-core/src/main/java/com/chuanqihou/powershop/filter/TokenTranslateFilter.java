@@ -13,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
@@ -66,11 +65,13 @@ public class TokenTranslateFilter extends OncePerRequestFilter {
         String loginType = request.getHeader(AuthConstants.LOGIN_TYPE);
         if (!StringUtils.hasText(loginType)) {
             ResponseUtil.responseJson(response, Result.fails(HttpStatus.FORBIDDEN.value(), "非法访问，登录类型不能为空"));
+            return;
         }
         // 获取token
         String authorization = request.getHeader(AuthConstants.AUTHORIZATION);
         if (!StringUtils.hasText(authorization)) {
-            ResponseUtil.responseJson(response, Result.fails(HttpStatus.UNAUTHORIZED.value(), "非法访问，token不能为空"));
+            ResponseUtil.responseJson(response, Result.fails(HttpStatus.FORBIDDEN.value(), "非法访问，token不能为空"));
+            return;
         }
         String token = authorization.replaceFirst(AuthConstants.BEARER, "");
         // 从redis中获取token对应的用户信息
@@ -79,22 +80,15 @@ public class TokenTranslateFilter extends OncePerRequestFilter {
         // 判断是否为空
         if (!StringUtils.hasText(userJson)) {
             // 为空，返回错误信息
-            ResponseUtil.responseJson(response, Result.fails(HttpStatus.UNAUTHORIZED.value(), "token非法"));
-        }
-        //获取token过期时间
-        Long expire = redisTemplate.getExpire(redisKey);
-        // 判读token是否过期以及是否需要刷新token过期时间
-        if (!ObjectUtils.isEmpty(expire) && expire != -2 && expire < AuthConstants.TOKEN_REFRESH_EXPIRE_TIME) {
-            //如果token存在,并且token过期时间小于5分钟，则刷新token时间
-            redisTemplate.expire(redisKey, AuthConstants.TOKEN_EXPIRE, AuthConstants.TOKEN_EXPIRE_TIME_UNIT);
+            ResponseUtil.responseJson(response, Result.fails(HttpStatus.FORBIDDEN.value(), "token非法"));
+            return;
         }
         Authentication authentication = null;
-        UsernamePasswordAuthenticationToken upa = null;
+        // 获取 UsernamePasswordAuthenticationToken 对象
+        UsernamePasswordAuthenticationToken upa = JSON.parseObject(userJson, UsernamePasswordAuthenticationToken.class);
         // 判断登录类型
         switch (loginType) {
-            case AuthConstants.LOGIN_TYPE:
-                // 获取 UsernamePasswordAuthenticationToken 对象
-                upa = JSON.parseObject(userJson, UsernamePasswordAuthenticationToken.class);
+            case AuthConstants.SYS_USER:
                 // 判断是否为空
                 if (!ObjectUtils.isEmpty(upa)) {
                     // 获取用户信息
@@ -102,19 +96,21 @@ public class TokenTranslateFilter extends OncePerRequestFilter {
                     // 获取用户权限
                     Set<String> perms = loginSysUser.getPerms();
                     Set<SimpleGrantedAuthority> simpleGrantedAuthorities = new HashSet<>();
-                    perms.forEach(perm -> {
+/*                    perms.forEach(perm -> {
                         simpleGrantedAuthorities.add(new SimpleGrantedAuthority(perm));
-                    });
-/*                    List<SimpleGrantedAuthority> simpleGrantedAuthorities = perms.stream()
-                            .map(SimpleGrantedAuthority::new)
-                            .collect(Collectors.toList());*/
+                    });*/
+                    simpleGrantedAuthorities = perms.stream()
+                            .map(SimpleGrantedAuthority::new).collect(Collectors.toSet());
 
                     // 创建认证信息
                     authentication = new UsernamePasswordAuthenticationToken(loginSysUser, null, simpleGrantedAuthorities);
                 }
                 break;
+            //case AuthConstants.
         }
-        // 设置认证信息
+        // 设置认证信息（将认证信息存放到security的上下文对象）
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        //放行
+        filterChain.doFilter(request,response);
     }
 }
