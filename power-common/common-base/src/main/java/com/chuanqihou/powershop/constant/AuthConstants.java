@@ -24,7 +24,7 @@ public class AuthConstants {
     /**
      * 持票人的 token前缀
      */
-    public static final String BEARER = "Bearer ";
+    public static final String BEARER = "bearer ";
 
     /**
      * 存在redis的token前缀

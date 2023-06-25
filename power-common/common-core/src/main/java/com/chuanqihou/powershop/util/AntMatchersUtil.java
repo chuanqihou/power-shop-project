@@ -7,7 +7,7 @@ import org.springframework.util.AntPathMatcher;
  * @date 2023/6/20 20:34
  * @description 自定义匹配器
  */
-public class MyMatchers {
+public class AntMatchersUtil {
 
     /**
      * 判断是否匹配

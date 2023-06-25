@@ -5,7 +5,7 @@ import com.chuanqihou.powershop.constant.AuthConstants;
 import com.chuanqihou.powershop.constant.ResourceConstant;
 import com.chuanqihou.powershop.domain.LoginSysUser;
 import com.chuanqihou.powershop.model.Result;
-import com.chuanqihou.powershop.util.MyMatchers;
+import com.chuanqihou.powershop.util.AntMatchersUtil;
 import com.chuanqihou.powershop.util.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -25,7 +25,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -56,7 +55,7 @@ public class TokenTranslateFilter extends OncePerRequestFilter {
         // 获取请求路径
         String path = request.getRequestURI();
         // 判断是否为放行路径
-        if (MyMatchers.isMatch(path, ResourceConstant.RESOURCE_ALLOW_URLS)){
+        if (AntMatchersUtil.isMatch(path, ResourceConstant.RESOURCE_ALLOW_URLS)){
             // 如果为放行路径，直接放行
             filterChain.doFilter(request, response);
             return;
