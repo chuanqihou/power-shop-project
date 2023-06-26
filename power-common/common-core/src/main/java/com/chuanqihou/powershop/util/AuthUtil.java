@@ -42,4 +42,8 @@ public class AuthUtil {
         return getLoginUser().getPerms();
     }
 
+    public static Long getShopId() {
+        return getLoginUser().getShopId();
+    }
+
 }

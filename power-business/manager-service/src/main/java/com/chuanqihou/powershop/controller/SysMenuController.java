@@ -32,7 +32,7 @@ public class SysMenuController {
      * @return 导航菜单
      */
     @GetMapping("/nav")
-    public Result getNav() {
+    public Result<MenuAndAuthVo> getNav() {
         // 创建MenuAndAuthVo对象
         MenuAndAuthVo menuAndAuthVo = new MenuAndAuthVo();
         // 设置权限

@@ -13,7 +13,7 @@ import org.springframework.http.HttpStatus;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Result {
+public class Result<T> {
 
     /**
      * 状态码
@@ -28,7 +28,7 @@ public class Result {
     /**
      * 返回数据
      */
-    private Object data;
+    private T data;
 
 
     /**
@@ -36,16 +36,16 @@ public class Result {
      * @param data 数据
      * @return Result
      */
-    public static Result success(Object data) {
-        return new Result(HttpStatus.OK.value(), "success", data);
+    public static <T> Result<T> success(T data) {
+        return new Result<T>(HttpStatus.OK.value(), "success", data);
     }
 
     /**
      * 操作成功
      * @return Result
      */
-    public static Result success() {
-        return new Result(HttpStatus.OK.value(), "success");
+    public static <T> Result<T> success() {
+        return new Result<T>(HttpStatus.OK.value(), "success");
     }
 
     /**
@@ -54,8 +54,8 @@ public class Result {
      * @param msg 提示信息
      * @return Result
      */
-    public static Result fails(Integer code,String msg) {
-        return new Result(code, msg);
+    public static <T> Result<T> fails(Integer code,String msg) {
+        return new Result<T>(code, msg);
     }
 
     public Result(Integer code, String msg) {

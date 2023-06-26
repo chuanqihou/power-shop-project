@@ -24,6 +24,7 @@ public class GlobalExceptionHandler {
     public Result exceptionHandler(RuntimeException ex) {
         // 打印异常信息
         log.error("系统异常：{}", ex.getMessage());
+        ex.printStackTrace();
         // 返回异常信息
         return Result.fails(500, "系统维护中，请稍后再试！");
     }

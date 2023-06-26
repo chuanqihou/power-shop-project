@@ -1,7 +1,10 @@
 package com.chuanqihou.powershop.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.chuanqihou.powershop.constant.ManagerConstant;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
@@ -22,6 +25,7 @@ import org.springframework.util.StringUtils;
  * @description 菜单服务实现类
  */
 @Service
+@CacheConfig(cacheNames = "com.chuanqihou.powershop.service.impl.SysMenuServiceImpl")
 public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> implements SysMenuService{
 
     /**
@@ -30,31 +34,19 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
     @Autowired
     private SysMenuMapper sysMenuMapper;
 
-    @Autowired
-    private StringRedisTemplate redisTemplate;
-
     /**
      * 根据用户id获取树形菜单列表
+     *
      * @param loginUserId 用户id
      * @return 树形菜单列表
      */
     @Override
+    @Cacheable(key = ManagerConstant.USER_MENU_TREE_PREFIX + "+#loginUserId")
     public List<SysMenu> getMenuListByUserId(Long loginUserId) {
-/*        // 获取菜单列表
-        List<SysMenu> sysMenus = sysMenuMapper.selectMenuListByUserId(loginUserId);*/
-
-        // 获取菜单列表（从redis中获取）
-        String menuListJson = redisTemplate.opsForValue().get("menuList");
-        List<SysMenu> sysMenus = null;
-        if (StringUtils.hasText(menuListJson)) {
-            sysMenus = JSON.parseArray(menuListJson, SysMenu.class);
-        }else{
-            // 从数据库中获取菜单列表 并存入redis
-            sysMenus = sysMenuMapper.selectMenuListByUserId(loginUserId);
-            redisTemplate.opsForValue().set("menuList", JSON.toJSONString(sysMenus),30, TimeUnit.DAYS);
-        }
+        // 获取菜单列表
+        List<SysMenu> sysMenus = sysMenuMapper.selectMenuListByUserId(loginUserId);
         // 转换为树形菜单列表，并返回
-        return getTreeMenuListRecursion(sysMenus,0L);
+        return getTreeMenuListRecursion(sysMenus, 0L);
     }
 
     /**
@@ -82,11 +74,14 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
      * @return 树形菜单列表
      */
     private List<SysMenu> getTreeMenuList(List<SysMenu> sysMenus, long parentId) {
+        // 获取父菜单列表
         List<SysMenu> parentMenuList = sysMenus.stream().filter(sysMenu -> sysMenu.getParentId().equals(parentId)).collect(Collectors.toList());
+        // 遍历父菜单列表 获取子菜单列表
         parentMenuList.forEach(sysMenu -> {
             List<SysMenu> collect = sysMenus.stream().filter(s -> s.getParentId().equals(sysMenu.getMenuId())).collect(Collectors.toList());
             sysMenu.setList(collect);
         });
+        // 返回父菜单列表
         return parentMenuList;
     }
 

@@ -25,6 +25,7 @@
            join sys_role_menu t2 on t1.menu_id=t2.menu_id
            join sys_user_role t3 on t2.role_id=t3.role_id
       where t3.user_id=#{loginUserId,jdbcType=BIGINT} and t1.type in (0,1)
+      order by order_num desc
   </select>
 
 </mapper>
