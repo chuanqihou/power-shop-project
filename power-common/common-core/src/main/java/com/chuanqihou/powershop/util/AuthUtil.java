@@ -42,7 +42,12 @@ public class AuthUtil {
         return getLoginUser().getPerms();
     }
 
+    /**
+     * 获取当前登录用户的店铺id
+     * @return 当前登录用户的店铺id
+     */
     public static Long getShopId() {
+        // 返回当前登录用户的店铺id
         return getLoginUser().getShopId();
     }
 

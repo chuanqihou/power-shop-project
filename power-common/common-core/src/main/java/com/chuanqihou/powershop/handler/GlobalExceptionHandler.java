@@ -35,7 +35,7 @@ public class GlobalExceptionHandler {
      * @return  Result
      */
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    public Result exceptionHandler(MethodArgumentNotValidException ex) {
+    public Result<Object> exceptionHandler(MethodArgumentNotValidException ex) {
         // 打印异常信息
         log.error("参数异常：{}", ex.getMessage());
         // 返回异常信息

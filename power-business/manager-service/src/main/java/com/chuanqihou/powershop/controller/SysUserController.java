@@ -1,13 +1,17 @@
 package com.chuanqihou.powershop.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chuanqihou.powershop.annotation.LogMethod;
 import com.chuanqihou.powershop.domain.LoginSysUser;
 import com.chuanqihou.powershop.domain.SysUser;
 import com.chuanqihou.powershop.model.Result;
 import com.chuanqihou.powershop.service.SysUserService;
 import com.chuanqihou.powershop.util.AuthUtil;
 import com.chuanqihou.powershop.vo.SysUserVO;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -19,6 +23,7 @@ import java.util.stream.Collectors;
  * @date 2023/6/25 18:38
  * @description 用户控制器
  */
+@Api(tags = "系统管理员接口")
 @RestController
 @RequestMapping("/sys/user")
 public class SysUserController {
@@ -33,6 +38,7 @@ public class SysUserController {
      * 获取当前登录用户信息
      * @return 当前用户信息
      */
+    @ApiOperation("获取当前登录用户信息")
     @GetMapping("/info")
     public Result<LoginSysUser> getCurrentLoginUserInfo() {
         // 返回当前登录用户信息
@@ -45,6 +51,8 @@ public class SysUserController {
      * @param sysUser 查询条件
      * @return 用户列表
      */
+    @ApiOperation("分页查询获取用户列表")
+    @PreAuthorize("hasAuthority('sys:user:page')")
     @GetMapping("/page")
     public Result<Page<SysUser>> page(Page<SysUser> page,SysUser sysUser) {
         // 分页查询用户列表
@@ -58,6 +66,9 @@ public class SysUserController {
      * @param sysUserVO 系统管理员信息
      * @return 新增结果
      */
+    @ApiOperation("新增系统管理员")
+    @LogMethod("新增系统管理员")
+    @PreAuthorize("hasAuthority('sys:user:save')")
     @PostMapping
     public Result addSysUser(@RequestBody SysUserVO sysUserVO) {
         // 新增系统管理员
@@ -71,6 +82,9 @@ public class SysUserController {
      * @param userIdsStr 用户id字符串
      * @return 删除结果
      */
+    @ApiOperation("删除系统管理员")
+    @LogMethod("删除系统管理员")
+    @PreAuthorize("hasAuthority('sys:user:delete')")
     @DeleteMapping("/{userIdStr}")
     public Result<Object> cutSysUserByUserIds(@PathVariable("userIdStr") String userIdsStr) {
         // 将字符串转换为数组
@@ -90,6 +104,8 @@ public class SysUserController {
      * @param userId 用户id
      * @return 用户信息
      */
+    @ApiOperation("根据用户id获取用户信息")
+    @PreAuthorize("hasAuthority('sys:user:info')")
     @GetMapping("/info/{userId}")
     public Result<SysUserVO> getSysUserInfoById(@PathVariable("userId") Long userId) {
         // 根据用户id获取用户信息
@@ -99,10 +115,13 @@ public class SysUserController {
     }
 
     /**
-     * 修改系统管理员
+     * 修改系统管理员信息
      * @param sysUserVO 系统管理员信息
      * @return 修改结果
      */
+    @ApiOperation("修改系统管理员信息")
+    @LogMethod("修改系统管理员信息")
+    @PreAuthorize("hasAuthority('sys:user:update')")
     @PutMapping
     public Result<Object> editSysUser(@RequestBody SysUserVO sysUserVO) {
         // 修改系统管理员

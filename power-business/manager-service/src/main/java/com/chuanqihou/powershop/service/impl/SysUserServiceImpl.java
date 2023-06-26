@@ -2,6 +2,7 @@ package com.chuanqihou.powershop.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chuanqihou.powershop.constant.ManagerConstant;
 import com.chuanqihou.powershop.domain.SysUserRole;
 import com.chuanqihou.powershop.mapper.SysUserRoleMapper;
 import com.chuanqihou.powershop.service.SysUserRoleService;
@@ -66,7 +67,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         //创建查询条件
         LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
         //设置查询条件
-        queryWrapper.eq(StringUtils.hasText(username),SysUser::getUsername, username);
+        queryWrapper.like(StringUtils.hasText(username),SysUser::getUsername, username);
+        // 如果是管理员则查询所有店铺的用户 否则查询当前店铺的用户
+        queryWrapper.eq(!ManagerConstant.ADMIN_SHOP_ID.equals(AuthUtil.getShopId()),SysUser::getShopId, AuthUtil.getShopId());
+        //设置排序条件 按照创建时间降序排序
+        queryWrapper.orderByDesc(SysUser::getCreateTime);
         //执行分页查询
         sysUserMapper.selectPage(userPage, queryWrapper);
         //返回分页对象

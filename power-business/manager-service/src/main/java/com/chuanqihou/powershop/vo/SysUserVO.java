@@ -2,6 +2,7 @@ package com.chuanqihou.powershop.vo;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.chuanqihou.powershop.domain.SysUser;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,6 +18,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@ApiModel(value = "系统用户视图对象")
 public class SysUserVO extends SysUser {
 
     /**

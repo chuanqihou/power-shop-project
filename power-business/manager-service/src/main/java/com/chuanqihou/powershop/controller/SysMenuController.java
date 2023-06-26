@@ -5,6 +5,8 @@ import com.chuanqihou.powershop.model.Result;
 import com.chuanqihou.powershop.service.SysMenuService;
 import com.chuanqihou.powershop.util.AuthUtil;
 import com.chuanqihou.powershop.vo.MenuAndAuthVo;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +19,7 @@ import java.util.List;
  * @date 2023/6/25 16:52
  * @description 菜单控制器
  */
+@Api(tags = "菜单管理接口")
 @RestController
 @RequestMapping("/sys/menu")
 public class SysMenuController {
@@ -31,6 +34,7 @@ public class SysMenuController {
      * 获取导航菜单
      * @return 导航菜单
      */
+    @ApiOperation("获取导航菜单")
     @GetMapping("/nav")
     public Result<MenuAndAuthVo> getNav() {
         // 创建MenuAndAuthVo对象

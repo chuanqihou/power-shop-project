@@ -20,8 +20,11 @@ public class RedisCacheConfig {
      */
     @Bean
     public RedisCacheConfiguration redisCacheConfiguration() {
+        // 创建Redis缓存配置对象
         RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig();
+        // 设置缓存配置序列化方式
         redisCacheConfiguration = redisCacheConfiguration.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.json()));
+        // 返回Redis缓存配置
         return redisCacheConfiguration;
     }
 
