@@ -23,24 +23,24 @@ public class AliyunOSSPropertiesConfig {
      * 填写Bucket所在地域对应的Endpoint
      * 以华东1（杭州）为例，Endpoint填写为https://oss-cn-hangzhou.aliyuncs.com。
      */
-    private String endpoint = "oss-cn-guangzhou.aliyuncs.com";
+    private String endpoint;
 
     /**
      * 阿里云账号AccessKey拥有所有API的访问权限，风险很高。
      * 强烈建议您创建并使用RAM用户进行API访问或日常运维，请登录RAM控制台创建RAM用户
      */
-    private String accessKeyId = "LTAI5tJekdifbQQYMr6973HR";
-    private String accessKeySecret = "oE3Xy6WpcIulifeaPt1iLCEIGT0pqY";
+    private String accessKeyId;
+    private String accessKeySecret;
 
     /**
      * 填写Bucket名称，例如example-bucket。
      */
-    private String bucketName = "cqh-reggie-image";
+    private String bucketName;
 
     /**
      * 填写Object完整路径，例如exampledir/exampleobject.txt。Object完整路径中不能包含Bucket名称。
      * 即目录路径
      */
-    private String objectName = "images/";
+    private String objectName;
 
 }
