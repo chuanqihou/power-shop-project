@@ -41,3 +41,10 @@ spring:
 #  license-url: https://github.com/chuanqihou
 #  terms-of-service-url: https://github.com/chuanqihou
 #  version: 1.0
+#aliyun:
+#  oss:
+#    endpoint: oss-cn-guangzhou.aliyuncs.com
+#    accessKeyId: LTAI5tJekdifbQQYMr6973HR
+#    accessKeySecret: oE3Xy6WpcIulifeaPt1iLCEIGT0pqY
+#    bucketName: cqh-reggie-image
+#    objectName: images/
