@@ -15,5 +15,11 @@ public interface ProdService extends IService<Prod>{
 
     Page<Prod> findProdByPage(Page<Prod> page, Prod prod);
 
-    boolean saveProd(ProdDTO prodDTO);
+    void saveProd(ProdDTO prodDTO);
+
+    ProdDTO getProdById(Long prodId);
+
+    void modifyProd(ProdDTO prodDTO);
+
+    void removeProdBuProdId(Long prodId);
 }

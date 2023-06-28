@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
      * @return Result
      */
     @ExceptionHandler(value = RuntimeException.class)
-    public Result exceptionHandler(RuntimeException ex) {
+    public Result<Object> exceptionHandler(RuntimeException ex) {
         // 打印异常信息
         log.error("系统异常：{}", ex.getMessage());
         ex.printStackTrace();

@@ -13,8 +13,11 @@ import java.util.List;
 public interface CategoryService extends IService<Category>{
 
 
-    boolean saveCategory(Category category);
+    void saveCategory(Category category);
 
     List<Category> getListCategory();
 
+    void modifyCategory(Category category);
+
+    void removeCategoryById(Long categoryId);
 }

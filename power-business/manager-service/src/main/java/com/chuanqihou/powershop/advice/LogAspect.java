@@ -1,9 +1,10 @@
-package com.chuanqihou.powershop.aspect;
+package com.chuanqihou.powershop.advice;
 
 import com.chuanqihou.powershop.annotation.LogMethod;
 import com.chuanqihou.powershop.domain.SysLog;
 import com.chuanqihou.powershop.mapper.SysLogMapper;
 import com.chuanqihou.powershop.util.AuthUtil;
+import com.chuanqihou.powershop.util.ThreadPoolUtil;
 import com.chuanqihou.powershop.util.WebScopeUtil;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.concurrent.Executor;
 
 /**
  * @author 传奇后
@@ -71,8 +73,13 @@ public class LogAspect {
                 .setOperation(operation)
                 .setCreateDate(new Date())
                 .setUserId(AuthUtil.getLoginUserId());
-        // 保存日志
-        sysLogMapper.insert(sysLog);
+        // 保存日志（异步保存，使用线程池）
+        ThreadPoolUtil.executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                sysLogMapper.insert(sysLog);
+            }
+        });
         // 返回方法的返回值
         return returnValue;
     }

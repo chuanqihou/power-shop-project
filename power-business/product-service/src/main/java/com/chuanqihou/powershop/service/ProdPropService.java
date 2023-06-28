@@ -20,4 +20,10 @@ public interface ProdPropService extends IService<ProdProp>{
     List<ProdProp> findProdPropAll();
 
     List<ProdPropValue> findProdPropValueByPropId(Long prodId);
+
+    void saveProdPropAndValue(ProdProp prodProp);
+
+    void modifyProdPropAndValue(ProdProp prodProp);
+
+    void removeProdPropAndValue(Long prodPropId);
 }

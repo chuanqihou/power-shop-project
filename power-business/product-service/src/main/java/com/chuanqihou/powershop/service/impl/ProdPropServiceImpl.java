@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chuanqihou.powershop.constant.ProductConstant;
 import com.chuanqihou.powershop.domain.ProdPropValue;
+import com.chuanqihou.powershop.ex.ProductServiceException;
 import com.chuanqihou.powershop.service.ProdPropValueService;
 import com.chuanqihou.powershop.util.AuthUtil;
 import org.springframework.beans.PropertyValue;
@@ -20,6 +21,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chuanqihou.powershop.mapper.ProdPropMapper;
 import com.chuanqihou.powershop.domain.ProdProp;
 import com.chuanqihou.powershop.service.ProdPropService;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 /**
@@ -86,8 +88,6 @@ public class ProdPropServiceImpl extends ServiceImpl<ProdPropMapper, ProdProp> i
             prodPropEach.setProdPropValues(prodPropValueListFilterByProdId);
         });
 
-
-
         return prodPropPage;
     }
 
@@ -101,5 +101,46 @@ public class ProdPropServiceImpl extends ServiceImpl<ProdPropMapper, ProdProp> i
         return prodPropValueService.list(new LambdaQueryWrapper<ProdPropValue>()
                 .eq(ProdPropValue::getPropId, prodId)
         );
+    }
+
+    @Override
+    @Transactional
+    public void saveProdPropAndValue(ProdProp prodProp) {
+        // 添加prodProp 属性
+        prodProp.setRule(1);
+        prodProp.setShopId(AuthUtil.getShopId());
+        int insertProdPropResult = prodPropMapper.insert(prodProp);
+
+        // 添加属性对应的属性值
+        List<ProdPropValue> prodPropValues = prodProp.getProdPropValues();
+        prodPropValues.forEach(prodPropValue -> {
+            prodPropValue.setValueId(null);
+            prodPropValue.setPropId(prodProp.getPropId());
+        });
+        boolean savePropValueResult = prodPropValueService.saveBatch(prodPropValues);
+
+        if (!(insertProdPropResult == 1 && savePropValueResult)) {
+            throw new ProductServiceException("添加规格失败，请联系管理员！");
+        }
+
+    }
+
+    @Override
+    public void modifyProdPropAndValue(ProdProp prodProp) {
+
+        int updatePropResult = prodPropMapper.updateById(prodProp);
+
+        List<ProdPropValue> prodPropValues = prodProp.getProdPropValues();
+
+        boolean updateProdPropValueBatchResult = prodPropValueService.updateBatchById(prodPropValues);
+
+        if (!(updatePropResult == 1 && updateProdPropValueBatchResult)) {
+            throw new ProductServiceException("修改规格信息失败，请联系管理员！");
+        }
+    }
+
+    @Override
+    public void removeProdPropAndValue(Long prodPropId) {
+
     }
 }

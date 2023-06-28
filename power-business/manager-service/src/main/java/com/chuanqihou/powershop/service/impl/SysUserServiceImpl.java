@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chuanqihou.powershop.constant.ManagerConstant;
 import com.chuanqihou.powershop.domain.SysUserRole;
+import com.chuanqihou.powershop.ex.ManagerServiceException;
 import com.chuanqihou.powershop.mapper.SysUserRoleMapper;
 import com.chuanqihou.powershop.service.SysUserRoleService;
 import com.chuanqihou.powershop.util.AuthUtil;
@@ -81,11 +82,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     /**
      * 保存用户信息
      * @param sysUserVO 用户信息
-     * @return 是否保存成功
      */
     @Override
     @Transactional
-    public boolean saveSysUser(SysUserVO sysUserVO) {
+    public void saveSysUser(SysUserVO sysUserVO) {
         /*
             添加用户信息
          */
@@ -120,26 +120,31 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         //执行添加用户角色操作
         boolean saveUserRoleResult = sysUserRoleService.saveBatch(sysUserRoleList);
 
-        //返回是否添加成功 true:添加成功 false:添加失败
-        return saveUserRoleResult && insertUserResult==1;
+        boolean result = saveUserRoleResult && insertUserResult==1;
+        if (!result) {
+            throw new ManagerServiceException("保存用户信息失败，请联系管理员！");
+        }
     }
 
     /**
      * 根据用户id删除用户信息
      * @param userIdList 用户id集合
-     * @return 是否删除成功
      */
     @Override
     @Transactional
-    public boolean removeSysUserByIds(List<Long> userIdList) {
+    public void removeSysUserByIds(List<Long> userIdList) {
         //删除用户关联的角色信息
         LambdaQueryWrapper<SysUserRole> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(SysUserRole::getUserId, userIdList);
         boolean delUserRoleResult = sysUserRoleService.remove(queryWrapper);
         //删除用户信息
         boolean delUserResult = this.removeBatchByIds(userIdList);
-        //返回是否删除成功 true:删除成功 false:删除失败
-        return delUserRoleResult && delUserResult;
+
+        //是否删除成功 true:删除成功 false:删除失败
+        boolean result = delUserRoleResult && delUserResult;
+        if (!result) {
+            throw new ManagerServiceException("删除用户信息失败，请联系管理员！");
+        }
     }
 
     /**
@@ -164,11 +169,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     /**
      * 修改用户信息
      * @param sysUserVO 用户信息
-     * @return 是否修改成功
      */
     @Override
     @Transactional
-    public boolean modifySysUser(SysUserVO sysUserVO) {
+    public void modifySysUser(SysUserVO sysUserVO) {
         //删除该用户的所有角色信息
         LambdaQueryWrapper<SysUserRole> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(SysUserRole::getUserId, sysUserVO.getUserId());
@@ -186,7 +190,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         boolean saveUserRoleResult = sysUserRoleService.saveBatch(sysUserRoleList);
         //修改用户其他信息
         int updateSysUserResult = sysUserMapper.updateById(sysUserVO);
-        //返回是否修改成功 true:修改成功 false:修改失败
-        return removeBatchUserRoleResult && saveUserRoleResult && updateSysUserResult==1;
+        //是否修改成功 true:修改成功 false:修改失败
+        boolean result = removeBatchUserRoleResult && saveUserRoleResult && updateSysUserResult==1;
+        if (!result) {
+            throw new ManagerServiceException("修改用户信息失败，请联系管理员！");
+        }
     }
 }

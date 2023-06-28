@@ -4,7 +4,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chuanqihou.powershop.constant.ProductConstant;
+import com.chuanqihou.powershop.domain.ProdTagReference;
+import com.chuanqihou.powershop.ex.ProductServiceException;
 import com.chuanqihou.powershop.model.Result;
+import com.chuanqihou.powershop.service.ProdTagReferenceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
@@ -27,6 +30,9 @@ public class ProdTagServiceImpl extends ServiceImpl<ProdTagMapper, ProdTag> impl
 
     @Autowired
     private ProdTagMapper prodTagMapper;
+
+    @Autowired
+    private ProdTagReferenceService prodTagReferenceService;
 
     @Override
     public Page<ProdTag> findProdTagByPage(Page<ProdTag> page, ProdTag prodTag) {
@@ -54,10 +60,20 @@ public class ProdTagServiceImpl extends ServiceImpl<ProdTagMapper, ProdTag> impl
 
     @Override
     public void removeSoftProdTagById(Long prodTagId) {
+        long num = prodTagReferenceService.count(new LambdaQueryWrapper<ProdTagReference>()
+                .eq(ProdTagReference::getTagId, prodTagId)
+        );
+        if (num > 0) {
+            throw new ProductServiceException("该分组下存在商品，请先删除该分组下所有商品再重试！");
+        }
+        // 删除（软删除）
         ProdTag prodTag = prodTagMapper.selectById(prodTagId);
         prodTag.setUpdateTime(new Date());
         prodTag.setStatus(false);
-        prodTagMapper.updateById(prodTag);
+        int updateProdTagResult = prodTagMapper.updateById(prodTag);
+        if (updateProdTagResult != 1) {
+            throw new ProductServiceException("删除分组失败，请联系管理员！");
+        }
     }
 
     @Override

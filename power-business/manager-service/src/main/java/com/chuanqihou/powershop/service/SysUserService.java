@@ -25,16 +25,14 @@ public interface SysUserService extends IService<SysUser>{
     /**
      * 保存用户信息
      * @param sysUserVO 用户信息
-     * @return 是否保存成功
      */
-    boolean saveSysUser(SysUserVO sysUserVO);
+    void saveSysUser(SysUserVO sysUserVO);
 
     /**
      * 根据用户id（批量）删除用户
      * @param userIdList 用户id集合
-     * @return 是否删除成功
      */
-    boolean removeSysUserByIds(List<Long> userIdList);
+    void removeSysUserByIds(List<Long> userIdList);
 
     /**
      * 根据用户id查询用户信息
@@ -46,7 +44,6 @@ public interface SysUserService extends IService<SysUser>{
     /**
      * 修改用户信息
      * @param sysUserVO 用户信息
-     * @return 是否修改成功
      */
-    boolean modifySysUser(SysUserVO sysUserVO);
+    void modifySysUser(SysUserVO sysUserVO);
 }

@@ -70,11 +70,10 @@ public class SysUserController {
     @LogMethod("新增系统管理员")
     @PreAuthorize("hasAuthority('sys:user:save')")
     @PostMapping
-    public Result addSysUser(@RequestBody SysUserVO sysUserVO) {
+    public Result<Object> addSysUser(@RequestBody SysUserVO sysUserVO) {
         // 新增系统管理员
-        boolean result = sysUserService.saveSysUser(sysUserVO);
-        // 返回新增结果 result 为 true 返回成功，否则返回失败
-        return result ? Result.success() : Result.fails(-1, "添加系统管理员失败！");
+        sysUserService.saveSysUser(sysUserVO);
+        return Result.success();
     }
 
     /**
@@ -94,9 +93,8 @@ public class SysUserController {
                 .map(Long::valueOf)
                 .collect(Collectors.toList());
         // 删除系统管理员
-        boolean result = sysUserService.removeSysUserByIds(userIdList);
-        // 返回删除结果 result 为 true 返回成功，否则返回失败
-        return result ? Result.success() : Result.fails(-1, "删除失败！");
+        sysUserService.removeSysUserByIds(userIdList);
+        return Result.success();
     }
 
     /**
@@ -125,9 +123,9 @@ public class SysUserController {
     @PutMapping
     public Result<Object> editSysUser(@RequestBody SysUserVO sysUserVO) {
         // 修改系统管理员
-        boolean editResult = sysUserService.modifySysUser(sysUserVO);
+        sysUserService.modifySysUser(sysUserVO);
         // 返回修改结果 editResult 为 true 返回成功，否则返回失败
-        return editResult ? Result.success() : Result.fails(-1, "修改失败！");
+        return Result.success();
     }
 
 }

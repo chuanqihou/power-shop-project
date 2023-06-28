@@ -3,6 +3,7 @@ package com.chuanqihou.powershop.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chuanqihou.powershop.constant.ProductConstant;
 import com.chuanqihou.powershop.util.AuthUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,9 +30,10 @@ public class ProdCommServiceImpl extends ServiceImpl<ProdCommMapper, ProdComm> i
     @Override
     public Page<ProdComm> findProCommPage(Page<ProdComm> page, ProdComm prodComm) {
         return prodCommMapper.selectPage(page, new LambdaQueryWrapper<ProdComm>()
-                //.eq(!AuthUtil.getShopId().equals(prodComm.getShopId()), ProdComm::getShopId, prodComm.getShopId())
+                .eq(!AuthUtil.getShopId().equals(ProductConstant.ADMIN_SHOP_ID), ProdComm::getShopId, AuthUtil.getShopId())
                 .like(StringUtils.hasText(prodComm.getProdName()), ProdComm::getProdName, prodComm.getProdName())
                 .eq(!ObjectUtils.isEmpty(prodComm.getStatus()), ProdComm::getStatus, prodComm.getStatus())
+                .orderByDesc(ProdComm::getCreateTime)
         );
     }
 
