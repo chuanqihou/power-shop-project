@@ -1,5 +1,6 @@
 package com.chuanqihou.powershop.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.chuanqihou.powershop.constant.StoreConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
@@ -28,5 +29,13 @@ public class AreaServiceImpl extends ServiceImpl<AreaMapper, Area> implements Ar
     @Cacheable(key = StoreConstant.AREA_LIST_CACHE_KEY)
     public List<Area> findAllAreaList() {
         return areaMapper.selectList(null);
+    }
+
+    @Override
+    @Cacheable(key = StoreConstant.AREA_LIST_PID_CACHE_KEY)
+    public List<Area> findAreaListByPid(Long pid) {
+        return areaMapper.selectList(new LambdaQueryWrapper<Area>()
+                .eq(Area::getParentId, pid)
+        );
     }
 }

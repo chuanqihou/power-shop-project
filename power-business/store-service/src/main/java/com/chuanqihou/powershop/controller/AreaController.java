@@ -31,4 +31,9 @@ public class AreaController {
         return Result.success(areaList);
     }
 
+    @GetMapping("/listByPid")
+    public Result<List<Area>> findAreaListByPid(Long pid) {
+        List<Area> areaList = areaService.findAreaListByPid(pid);
+        return Result.success(areaList);
+    }
 }

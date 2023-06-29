@@ -3,6 +3,7 @@ package com.chuanqihou.powershop.filter;
 import com.alibaba.fastjson.JSON;
 import com.chuanqihou.powershop.constant.AuthConstants;
 import com.chuanqihou.powershop.constant.ResourceConstant;
+import com.chuanqihou.powershop.domain.LoginMember;
 import com.chuanqihou.powershop.domain.LoginSysUser;
 import com.chuanqihou.powershop.model.Result;
 import com.chuanqihou.powershop.util.AntMatchersUtil;
@@ -105,7 +106,11 @@ public class TokenTranslateFilter extends OncePerRequestFilter {
                     authentication = new UsernamePasswordAuthenticationToken(loginSysUser, null, simpleGrantedAuthorities);
                 }
                 break;
-            //case AuthConstants.
+            case AuthConstants.WX_USER:
+                // 获取微信小程序登录用户信息
+                LoginMember loginMember = JSON.parseObject(upa.getPrincipal().toString(), LoginMember.class);
+                // 跳过认证
+                authentication = new UsernamePasswordAuthenticationToken(loginMember, null, null);
         }
         // 设置认证信息（将认证信息存放到security的上下文对象）
         SecurityContextHolder.getContext().setAuthentication(authentication);

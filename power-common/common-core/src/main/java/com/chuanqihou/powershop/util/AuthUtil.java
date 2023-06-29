@@ -1,5 +1,6 @@
 package com.chuanqihou.powershop.util;
 
+import com.chuanqihou.powershop.domain.LoginMember;
 import com.chuanqihou.powershop.domain.LoginSysUser;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -49,6 +50,33 @@ public class AuthUtil {
     public static Long getShopId() {
         // 返回当前登录用户的店铺id
         return getLoginUser().getShopId();
+    }
+
+    /**
+     * 获取微信小程序登录用户信息
+     * @return 用户信息
+     */
+    public static LoginMember getLoginMember() {
+        // 获取当前登录用户信息
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // 返回当前登录用户信息
+        return (LoginMember) authentication.getPrincipal();
+    }
+
+    /**
+     * 获取微信小程序登录用户ID
+     * @return 用户ID
+     */
+    public static Integer getLoginMemberId() {
+        return getLoginMember().getId();
+    }
+
+    /**
+     * 获取微信小程序登录用户的openid
+     * @return openid
+     */
+    public static String getLoginMemberOpenId() {
+        return getLoginMember().getOpenId();
     }
 
 }

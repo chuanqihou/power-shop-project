@@ -69,7 +69,7 @@ public class AuthConstants {
     /**
      * 微信用户
      */
-    public static final String WX_USER = "wx_user";
+    public static final String WX_USER = "member";
 
     /**
      * token

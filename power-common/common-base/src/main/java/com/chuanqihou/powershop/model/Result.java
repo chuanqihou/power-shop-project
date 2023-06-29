@@ -58,6 +58,19 @@ public class Result<T> {
         return new Result<T>(code, msg);
     }
 
+    /**
+     * 操作失败
+     * @param data 提示信息
+     * @return Result
+     */
+    public static <T> Result<T> fails(T data) {
+        return new Result<T>(data);
+    }
+
+    public Result(T data) {
+        this.data = data;
+    }
+
     public Result(Integer code, String msg) {
         this.code = code;
         this.msg = msg;

@@ -15,4 +15,5 @@ public interface AreaService extends IService<Area>{
 
     List<Area> findAllAreaList();
 
+    List<Area> findAreaListByPid(Long pid);
 }
