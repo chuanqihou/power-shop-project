@@ -25,5 +25,5 @@ public class MemberConstant {
      * 发送短信验证码成功返回的值
      */
     public static final String SMS_SENT_OK = "OK";
-    public static final String MEMBER_ADDR_CACHE_KEY_PREFIX = "member_addr_cache_key_prefix";
+    public static final String MEMBER_ADDR_CACHE_KEY_PREFIX = "'member_addr_cache_key_prefix'";
 }

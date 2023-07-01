@@ -48,6 +48,7 @@ public class ProdTagServiceImpl extends ServiceImpl<ProdTagMapper, ProdTag> impl
     public List<ProdTag> findProdTagAllList() {
         return prodTagMapper.selectList(new LambdaQueryWrapper<ProdTag>()
                 .eq(ProdTag::getStatus, ProductConstant.PROD_TAG_NORMAL_STATUS)
+                .orderByDesc(ProdTag::getSeq)
         );
     }
 

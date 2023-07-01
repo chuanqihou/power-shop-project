@@ -4,6 +4,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chuanqihou.powershop.domain.Prod;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chuanqihou.powershop.dto.ProdDTO;
+import com.chuanqihou.powershop.model.ProdEs;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author 传奇后
@@ -22,4 +26,8 @@ public interface ProdService extends IService<Prod>{
     void modifyProd(ProdDTO prodDTO);
 
     void removeProdBuProdId(Long prodId);
+
+    int selectProdCount(Date t1, Date t2);
+
+    List<ProdEs> selectProdEsByPage(int currentPage, int size, Date t1, Date t2);
 }

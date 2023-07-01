@@ -20,17 +20,26 @@ import org.springframework.util.ObjectUtils;
 /**
  * @author 传奇后
  * @date 2023/6/25 10:35
- * @description
+ * @description 会员管理业务实现类
  */
 @Service
 @CacheConfig(cacheNames = "com.chuanqihou.powershop.service.impl.MemberAddrServiceImpl")
 public class MemberAddrServiceImpl extends ServiceImpl<MemberAddrMapper, MemberAddr> implements MemberAddrService{
 
+    /**
+     * 会员管理mapper
+     */
     @Autowired
     private MemberAddrMapper memberAddrMapper;
 
+    /**
+     * 查询所有地址
+     * @param loginMemberOpenId 登录用户openid
+     * @return 地址集合
+     */
     @Override
     @Cacheable(key = MemberConstant.MEMBER_ADDR_CACHE_KEY_PREFIX+"+#loginMemberOpenId")
+    //@Cacheable(key = "T(com.chuanqihou.powershop.constant.MemberConstant).MEMBER_ADDR_CACHE_KEY_PREFIX + #loginMemberOpenId")
     public List<MemberAddr> findMemberAddrList(String loginMemberOpenId) {
         return memberAddrMapper.selectList(new LambdaQueryWrapper<MemberAddr>()
                 .eq(MemberAddr::getOpenId, loginMemberOpenId)
@@ -38,8 +47,14 @@ public class MemberAddrServiceImpl extends ServiceImpl<MemberAddrMapper, MemberA
         );
     }
 
+    /**
+     * 修改默认收货地址
+     * @param addrId 收货地址id
+     * @param openId openid
+     */
     @Override
     @CacheEvict(key = MemberConstant.MEMBER_ADDR_CACHE_KEY_PREFIX+"+#openId")
+    //@Cacheable(key = "T(com.chuanqihou.powershop.constant.MemberConstant).MEMBER_ADDR_CACHE_KEY_PREFIX + #openId")
     public void modifyDefaultAddr(Long addrId,String openId) {
         // 查询登录用户之前是否设置过默认收货地址
         MemberAddr oldAddrDefault = memberAddrMapper.selectOne(new LambdaQueryWrapper<MemberAddr>()
@@ -66,8 +81,14 @@ public class MemberAddrServiceImpl extends ServiceImpl<MemberAddrMapper, MemberA
 
     }
 
+    /**
+     * 保存收货地址
+     * @param memberAddr 地址信息
+     * @param openId openid
+     */
     @Override
     @CacheEvict(key = MemberConstant.MEMBER_ADDR_CACHE_KEY_PREFIX+"+#openId")
+    //@Cacheable(key = "T(com.chuanqihou.powershop.constant.MemberConstant).MEMBER_ADDR_CACHE_KEY_PREFIX + #openId")
     public void saveMemberAddr(MemberAddr memberAddr,String openId) {
         memberAddr.setOpenId(openId);
         memberAddr.setStatus(1);
@@ -80,8 +101,14 @@ public class MemberAddrServiceImpl extends ServiceImpl<MemberAddrMapper, MemberA
         }
     }
 
+    /**
+     * 修改地址信息
+     * @param memberAddr 地址信息
+     * @param openId openid
+     */
     @Override
     @CacheEvict(key = MemberConstant.MEMBER_ADDR_CACHE_KEY_PREFIX+"+#openId")
+    //@Cacheable(key = "T(com.chuanqihou.powershop.constant.MemberConstant).MEMBER_ADDR_CACHE_KEY_PREFIX + #openId")
     public void modifyMemberAddr(MemberAddr memberAddr,String openId) {
         memberAddr.setUpdateTime(new Date());
         int updateAddrResult = memberAddrMapper.updateById(memberAddr);
@@ -90,8 +117,14 @@ public class MemberAddrServiceImpl extends ServiceImpl<MemberAddrMapper, MemberA
         }
     }
 
+    /**
+     * 根据id删除收货地址
+     * @param addrId 地址id
+     * @param openId openid
+     */
     @Override
     @CacheEvict(key = MemberConstant.MEMBER_ADDR_CACHE_KEY_PREFIX+"+#openId")
+    //@Cacheable(key = "T(com.chuanqihou.powershop.constant.MemberConstant).MEMBER_ADDR_CACHE_KEY_PREFIX + #openId")
     public void removeSoftMemberAddrById(Long addrId,String openId) {
         MemberAddr memberAddr = new MemberAddr();
         memberAddr.setAddrId(addrId);

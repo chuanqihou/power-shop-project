@@ -2,6 +2,7 @@ package com.chuanqihou.powershop;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * @author 传奇后
@@ -9,6 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @description 商品模块启动类
  */
 @SpringBootApplication
+@EnableScheduling
 public class ProductServiceApplication {
 
     /**

@@ -34,4 +34,22 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
         );
     }
 
+    @Override
+    public List<Notice> findTopNoticeList() {
+        return noticeMapper.selectList(new LambdaQueryWrapper<Notice>()
+                .eq(Notice::getStatus, 1)
+                .eq(Notice::getIsTop, 1)
+                .orderByDesc(Notice::getCreateTime)
+        );
+    }
+
+    @Override
+    public Page<Notice> findIndexNoticeByPage() {
+        return noticeMapper.selectPage(new Page<Notice>(1,10),new LambdaQueryWrapper<Notice>()
+                .eq(Notice::getStatus, 1)
+                .eq(Notice::getIsTop, 1)
+                .orderByDesc(Notice::getCreateTime)
+        );
+    }
+
 }

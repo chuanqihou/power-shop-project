@@ -7,6 +7,8 @@ import com.chuanqihou.powershop.service.IndexImgService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * @author 传奇后
  * @date 2023/6/28 9:05
@@ -29,6 +31,12 @@ public class IndexImgController {
     public Result<Object> addIndexImg(@RequestBody IndexImg indexImg) {
         indexImgService.saveIndexImg(indexImg);
         return Result.success();
+    }
+
+    @GetMapping("/indexImgs")
+    public Result<List<IndexImg>> getIndexImgList() {
+        List<IndexImg> indexImgList = indexImgService.findIndexImgList();
+        return Result.success(indexImgList);
     }
 
 }

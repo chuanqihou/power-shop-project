@@ -121,5 +121,13 @@ public class ProdTagController {
         return Result.success();
     }
 
+//    =========================================================================================
+
+    @GetMapping("/prodTagList")
+    public Result<List<ProdTag>> getProdTagList() {
+        List<ProdTag> prodTagAllList = prodTagService.findProdTagAllList();
+        return Result.success(prodTagAllList);
+    }
+
 
 }

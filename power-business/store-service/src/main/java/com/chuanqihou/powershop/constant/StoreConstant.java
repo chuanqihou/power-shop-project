@@ -16,4 +16,9 @@ public class StoreConstant {
      * 根据pid存储地址在redis中的key
      */
     public static final String AREA_LIST_PID_CACHE_KEY = "'area_list_pid_cache_key'";
+
+    /**
+     * 首页轮播图展示数量
+     */
+    public static final Integer INDEX_IMG_NUM = 5;
 }

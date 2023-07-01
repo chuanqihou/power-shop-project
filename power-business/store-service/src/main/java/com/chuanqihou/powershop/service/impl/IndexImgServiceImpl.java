@@ -2,6 +2,7 @@ package com.chuanqihou.powershop.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chuanqihou.powershop.constant.StoreConstant;
 import com.chuanqihou.powershop.util.AuthUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,5 +42,14 @@ public class IndexImgServiceImpl extends ServiceImpl<IndexImgMapper, IndexImg> i
         indexImg.setCreateTime(new Date());
 
         indexImgMapper.insert(indexImg);
+    }
+
+    @Override
+    public List<IndexImg> findIndexImgList() {
+        return indexImgMapper.selectList(new LambdaQueryWrapper<IndexImg>()
+                .eq(IndexImg::getStatus,1)
+                .orderByDesc(IndexImg::getSeq)
+                .last("limit "+ StoreConstant.INDEX_IMG_NUM)
+        );
     }
 }
