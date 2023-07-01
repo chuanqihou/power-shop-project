@@ -5,6 +5,8 @@ import com.chuanqihou.powershop.domain.Prod;
 import com.chuanqihou.powershop.dto.ProdDTO;
 import com.chuanqihou.powershop.model.Result;
 import com.chuanqihou.powershop.service.ProdService;
+import com.chuanqihou.powershop.util.AuthUtil;
+import com.chuanqihou.powershop.vo.ProdVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,6 +104,16 @@ public class ProdController {
         prodService.removeProdBuProdId(prodId);
         // 返回数据
         return Result.success();
+    }
+
+    //------------------------------------------------------------------------------
+
+    @GetMapping("/prodInfo")
+    public Result<ProdVo> getWxProdInfoByProdId(Long prodId) {
+        //String openId = AuthUtil.getLoginMemberOpenId();
+        ProdVo prodVo = prodService.findProdInfoByProdId(prodId);
+
+        return Result.success(prodVo);
     }
 
 }

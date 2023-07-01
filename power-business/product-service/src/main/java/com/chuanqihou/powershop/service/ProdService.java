@@ -5,6 +5,7 @@ import com.chuanqihou.powershop.domain.Prod;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chuanqihou.powershop.dto.ProdDTO;
 import com.chuanqihou.powershop.model.ProdEs;
+import com.chuanqihou.powershop.vo.ProdVo;
 
 import java.util.Date;
 import java.util.List;
@@ -30,4 +31,6 @@ public interface ProdService extends IService<Prod>{
     int selectProdCount(Date t1, Date t2);
 
     List<ProdEs> selectProdEsByPage(int currentPage, int size, Date t1, Date t2);
+
+    ProdVo findProdInfoByProdId(Long prodId);
 }

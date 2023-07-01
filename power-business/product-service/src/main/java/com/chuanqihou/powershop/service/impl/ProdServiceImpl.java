@@ -14,6 +14,7 @@ import com.chuanqihou.powershop.model.ProdEs;
 import com.chuanqihou.powershop.service.ProdTagReferenceService;
 import com.chuanqihou.powershop.service.SkuService;
 import com.chuanqihou.powershop.util.AuthUtil;
+import com.chuanqihou.powershop.vo.ProdVo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -306,5 +307,25 @@ public class ProdServiceImpl extends ServiceImpl<ProdMapper, Prod> implements Pr
         });
         // 返回数据
         return prodEsList;
+    }
+
+    @Override
+    public ProdVo findProdInfoByProdId(Long prodId) {
+
+        Prod prod = prodMapper.selectOne(new LambdaQueryWrapper<Prod>()
+                .eq(Prod::getProdId, prodId)
+                .eq(Prod::getStatus, 1)
+        );
+        ProdVo prodVo = new ProdVo();
+        BeanUtils.copyProperties(prod, prodVo);
+
+        List<Sku> skuList = skuService.list(new LambdaQueryWrapper<Sku>()
+                .eq(Sku::getProdId, prodId)
+                .eq(Sku::getStatus, 1)
+        );
+
+        prodVo.setSkuList(skuList);
+
+        return prodVo;
     }
 }

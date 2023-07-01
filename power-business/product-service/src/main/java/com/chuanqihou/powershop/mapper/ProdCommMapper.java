@@ -2,6 +2,7 @@ package com.chuanqihou.powershop.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.chuanqihou.powershop.domain.ProdComm;
+import com.chuanqihou.powershop.vo.ProdCommOverviewVo;
 import org.apache.ibatis.annotations.Mapper;
 
 
@@ -12,4 +13,5 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface ProdCommMapper extends BaseMapper<ProdComm> {
+    ProdCommOverviewVo selectProdCommCount(Long prodId);
 }

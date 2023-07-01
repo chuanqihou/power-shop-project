@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chuanqihou.powershop.domain.ProdComm;
 import com.chuanqihou.powershop.model.Result;
 import com.chuanqihou.powershop.service.ProdCommService;
+import com.chuanqihou.powershop.vo.ProdCommOverviewVo;
+import com.chuanqihou.powershop.vo.ProdCommVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,6 +72,20 @@ public class ProdCommController {
         prodCommService.modifyProdComm(prodComm);
         // 返回数据
         return Result.success();
+    }
+
+    @GetMapping("/prodCommData")
+    public Result<ProdCommOverviewVo> getProdCommCount(Long prodId) {
+
+        ProdCommOverviewVo prodCommOverviewVo = prodCommService.findProdCommCount(prodId);
+
+        return Result.success(prodCommOverviewVo);
+    }
+
+    @GetMapping("/prodCommPageByProd")
+    public Result<Page<ProdCommVO>> getProdCommPageByProdId(Page<ProdComm> page, ProdComm prodComm) {
+        Page<ProdCommVO> prodCommList =  prodCommService.findWxProdCommCount(page,prodComm);
+        return Result.success(prodCommList);
     }
 
 }

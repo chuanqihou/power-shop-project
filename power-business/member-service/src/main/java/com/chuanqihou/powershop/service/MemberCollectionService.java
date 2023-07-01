@@ -13,4 +13,7 @@ public interface MemberCollectionService extends IService<MemberCollection>{
 
     Long findMemberCollectionNum();
 
+    Boolean isCollection(Long prodId);
+
+    void addOrCancelMemberProCollection(Long prodId);
 }

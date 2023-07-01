@@ -25,8 +25,18 @@
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
-    prod_comm_id, prod_id, prod_name, order_item_id, open_id, content, reply_content, 
-    create_time, reply_time, reply_sts, postip, score, useful_counts, pics, is_anonymous, 
+    prod_comm_id, prod_id, prod_name, order_item_id, open_id, content, reply_content,
+    create_time, reply_time, reply_sts, postip, score, useful_counts, pics, is_anonymous,
     `status`, evaluate, shop_id
   </sql>
+
+  <select id="selectProdCommCount" resultType="com.chuanqihou.powershop.vo.ProdCommOverviewVo">
+      select
+        count(*) number,
+        IFNULL(sum(case when evaluate = 0 then 1 end),0) praiseNumber,
+        IFNULL(sum(case when evaluate = 1 then 1 end),0) secondaryNumber,
+        IFNULL(sum(case when evaluate = 2 then 1 end),0) negativeNumber,
+        sum(case when pics is null then 0 else 1 end) picNumber
+      from prod_comm where prod_id =102
+    </select>
 </mapper>

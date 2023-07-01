@@ -1,0 +1,118 @@
+package com.chuanqihou.powershop.domain;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.io.Serializable;
+import java.util.Date;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+
+/**
+ * @author 传奇后
+ * @date 2023/6/25 10:35
+ * @description
+ */
+@ApiModel(description = "global_table")
+@Schema
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@TableName(value = "global_table")
+public class GlobalTable implements Serializable {
+    /**
+     * 全局事务ID
+     */
+    @TableId(value = "xid", type = IdType.AUTO)
+    @ApiModelProperty(value = "全局事务ID")
+    @Schema(description = "全局事务ID")
+    private String xid;
+
+    /**
+     * 事务ID
+     */
+    @TableField(value = "transaction_id")
+    @ApiModelProperty(value = "事务ID")
+    @Schema(description = "事务ID")
+    private Long transactionId;
+
+    /**
+     * 状态
+     */
+    @TableField(value = "`status`")
+    @ApiModelProperty(value = "状态")
+    @Schema(description = "状态")
+    private Integer status;
+
+    /**
+     * 应用ID
+     */
+    @TableField(value = "application_id")
+    @ApiModelProperty(value = "应用ID")
+    @Schema(description = "应用ID")
+    private String applicationId;
+
+    /**
+     * 事务分组名
+     */
+    @TableField(value = "transaction_service_group")
+    @ApiModelProperty(value = "事务分组名")
+    @Schema(description = "事务分组名")
+    private String transactionServiceGroup;
+
+    /**
+     * 执行事务的方法
+     */
+    @TableField(value = "transaction_name")
+    @ApiModelProperty(value = "执行事务的方法")
+    @Schema(description = "执行事务的方法")
+    private String transactionName;
+
+    /**
+     * 超时时间
+     */
+    @TableField(value = "timeout")
+    @ApiModelProperty(value = "超时时间")
+    @Schema(description = "超时时间")
+    private Integer timeout;
+
+    /**
+     * 开始时间
+     */
+    @TableField(value = "begin_time")
+    @ApiModelProperty(value = "开始时间")
+    @Schema(description = "开始时间")
+    private Long beginTime;
+
+    /**
+     * 应用数据
+     */
+    @TableField(value = "application_data")
+    @ApiModelProperty(value = "应用数据")
+    @Schema(description = "应用数据")
+    private String applicationData;
+
+    /**
+     * 创建时间
+     */
+    @TableField(value = "gmt_create")
+    @ApiModelProperty(value = "创建时间")
+    @Schema(description = "创建时间")
+    private Date gmtCreate;
+
+    /**
+     * 修改时间
+     */
+    @TableField(value = "gmt_modified")
+    @ApiModelProperty(value = "修改时间")
+    @Schema(description = "修改时间")
+    private Date gmtModified;
+
+    private static final long serialVersionUID = 1L;
+}

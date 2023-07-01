@@ -9,5 +9,5 @@ import com.chuanqihou.powershop.model.ProdEs;
  * @description
  */
 public interface SearchProdService {
-    Page<ProdEs> searchProdEsByTagIdPage(Long tagId, Long size);
+    Page<ProdEs> searchProdEsByTagIdPage(Long tagId, Integer size);
 }

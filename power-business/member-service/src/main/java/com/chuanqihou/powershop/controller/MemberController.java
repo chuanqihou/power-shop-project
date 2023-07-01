@@ -1,13 +1,13 @@
 package com.chuanqihou.powershop.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.chuanqihou.powershop.domain.Member;
 import com.chuanqihou.powershop.model.Result;
 import com.chuanqihou.powershop.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author 传奇后
@@ -25,6 +25,16 @@ public class MemberController {
     public Result<Object> editMemberInfo(@RequestBody Member member) {
         memberService.modifyMemberInfo(member);
         return Result.success();
+    }
+
+    @PostMapping("/getMemberListByRemoteAndOpenIds")
+    public List<Member> getMemberListByRemoteAndOpenIds(@RequestBody List<String> openIds){
+        System.out.println("==========="+openIds);
+        List<Member> list = memberService.list(new LambdaQueryWrapper<Member>()
+                .in(Member::getOpenId, openIds)
+        );
+        System.out.println("======="+list);
+        return list;
     }
 
 }

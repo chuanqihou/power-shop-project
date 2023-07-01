@@ -1,7 +1,6 @@
 package com.chuanqihou.powershop.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.chuanqihou.powershop.domain.ProdTag;
 import com.chuanqihou.powershop.model.ProdEs;
 import com.chuanqihou.powershop.model.Result;
 import com.chuanqihou.powershop.service.SearchProdService;
@@ -23,7 +22,7 @@ public class SearchProdController {
     private SearchProdService searchProdService;
 
     @GetMapping("/prodListByTagId")
-    public Result<Page<ProdEs>> getProdTageById(Long tagId,Long size) {
+    public Result<Page<ProdEs>> getProdTageById(Long tagId,Integer size) {
         Page<ProdEs> prodEsPage = searchProdService.searchProdEsByTagIdPage(tagId,size);
         return Result.success(prodEsPage);
     }
