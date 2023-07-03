@@ -1,6 +1,5 @@
 package com.chuanqihou.powershop.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -93,8 +92,8 @@ public class ProdCommServiceImpl extends ServiceImpl<ProdCommMapper, ProdComm> i
         List<ProdComm> records = prodCommPage.getRecords();
         List<String> openidList = records.stream().map(ProdComm::getOpenId).collect(Collectors.toList());
         // RPC 根据评论内的openid获取用户头像和昵称信息
-        //List<Member> memberList = productMemberFeign.getMemberListByRemoteAndOpenIds(openidList);
-        List<Member> memberList = new ArrayList<>();
+        List<Member> memberList = productMemberFeign.getMemberListByRemoteAndOpenIds(openidList);
+/*        List<Member> memberList = new ArrayList<>();
         String json = "  {\n" +
                 "    \"id\": 6,\n" +
                 "    \"openId\": \"ohbMy6rgx3WFbMcwBxndKkqTcjDI\",\n" +
@@ -114,8 +113,10 @@ public class ProdCommServiceImpl extends ServiceImpl<ProdCommMapper, ProdComm> i
                 "    \"status\": 1,\n" +
                 "    \"score\": null\n" +
                 "  }";
-        Member member1 = JSON.parseObject(json, Member.class);
-        memberList.add(member1);
+        Member member1 = JSON.parseObject(json, Member.class);*/
+        //memberList.add(member1);
+
+        productMemberFeign.testInfo();
 
         List<ProdCommVO> prodCommVOS = new ArrayList<>();
         records.forEach(pc ->{

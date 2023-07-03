@@ -23,4 +23,9 @@ public interface ProductMemberFeign {
     @GetMapping("/p/user/getMemberListByRemoteAndOpenIds2")
     List<Member> getMemberListByRemoteAndOpenIds2(@RequestParam("openIds") List<String> openIds);
 
+
+    @GetMapping("/p/user/test")
+    void testInfo();
+
+
 }

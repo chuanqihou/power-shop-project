@@ -47,4 +47,9 @@ public class MemberController {
         return list;
     }
 
+    @GetMapping("/test")
+    void testInfo(){
+        System.out.println("=================8888888888888888888============================================");
+    }
+
 }

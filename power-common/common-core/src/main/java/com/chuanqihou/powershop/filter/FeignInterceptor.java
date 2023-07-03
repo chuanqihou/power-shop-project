@@ -36,7 +36,7 @@ public class FeignInterceptor implements RequestInterceptor {
             // 获取请求头中的loginType
             String loginType = request.getHeader(AuthConstants.LOGIN_TYPE);
             // 判断token和loginType是否为空
-            if (!StringUtils.hasText(token) && !StringUtils.hasText(loginType)) {
+            if (StringUtils.hasText(token) && StringUtils.hasText(loginType)) {
                 // 将token设置到请求头中
                 requestTemplate.header(AuthConstants.AUTHORIZATION, token);
                 // 将loginType设置到请求头中

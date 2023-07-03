@@ -1,6 +1,5 @@
 package com.chuanqihou.powershop.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chuanqihou.powershop.domain.Basket;
@@ -68,52 +67,7 @@ public class BasketServiceImpl extends ServiceImpl<BasketMapper, Basket> impleme
         // 获取skuId集合
         List<Long> skuIdList = basketList.stream().map(Basket::getSkuId).collect(Collectors.toList());
         // RPC 远程调用
-        //List<Sku> skuAllList = searchProductFeign.getSkuListRemoteBySkuIds(skuIdList);
-        List<Sku> skuAllList = new ArrayList<>();
-        String json1 = "  {\n" +
-                "    \"skuId\": 440,\n" +
-                "    \"prodId\": 102,\n" +
-                "    \"properties\": \"颜色:黄\",\n" +
-                "    \"oriPrice\": 28997,\n" +
-                "    \"price\": 18999,\n" +
-                "    \"stocks\": 10,\n" +
-                "    \"actualStocks\": null,\n" +
-                "    \"updateTime\": \"2023-06-28 16:18:43\",\n" +
-                "    \"createTime\": \"2023-06-28 16:18:43\",\n" +
-                "    \"modelId\": null,\n" +
-                "    \"pic\": \"https://cqh-power-shop.oss-cn-guangzhou.aliyuncs.com/images/72f9021b-e6f8-4b18-98ab-836d45881656.jpg\",\n" +
-                "    \"skuName\": \"黄 \",\n" +
-                "    \"prodName\": \"华硕 （ASUS） TUF-GeForce RTX 4090-O24G-GAMING 黄 \",\n" +
-                "    \"version\": 0,\n" +
-                "    \"weight\": 1,\n" +
-                "    \"volume\": 1,\n" +
-                "    \"status\": 1\n" +
-                "  }";
-        Sku sku1 = JSON.parseObject(json1, Sku.class);
-
-        String json2 = "{\n" +
-                "    \"skuId\": 441,\n" +
-                "    \"prodId\": 102,\n" +
-                "    \"properties\": \"颜色:蓝\",\n" +
-                "    \"oriPrice\": 28999,\n" +
-                "    \"price\": 28999,\n" +
-                "    \"stocks\": 10,\n" +
-                "    \"actualStocks\": null,\n" +
-                "    \"updateTime\": \"2023-06-28 16:18:43\",\n" +
-                "    \"createTime\": \"2023-06-28 16:18:43\",\n" +
-                "    \"modelId\": null,\n" +
-                "    \"pic\": \"https://cqh-power-shop.oss-cn-guangzhou.aliyuncs.com/images/29ced49c-c2ca-4f38-a308-e1dbc21ea51f.jpg\",\n" +
-                "    \"skuName\": \"蓝 \",\n" +
-                "    \"prodName\": \"华硕 （ASUS） TUF-GeForce RTX 4090-O24G-GAMING 蓝 \",\n" +
-                "    \"version\": 0,\n" +
-                "    \"weight\": 1,\n" +
-                "    \"volume\": 1,\n" +
-                "    \"status\": 1\n" +
-                "  }";
-        Sku sku2 = JSON.parseObject(json2, Sku.class);
-
-        skuAllList.add(sku1);
-        skuAllList.add(sku2);
+        List<Sku> skuAllList = searchProductFeign.getSkuListRemoteBySkuIds(skuIdList);
 
         // 创建 List<ShopCart>对象
         List<ShopCart> shopCartList = new ArrayList<>();
@@ -134,7 +88,7 @@ public class BasketServiceImpl extends ServiceImpl<BasketMapper, Basket> impleme
                 if (basket.getShopId().equals(shopId)) {
                     // 在条件内创建 CartItem对象
                     CartItem cartItem = new CartItem();
-                    // TODO: 通过复制Basket的属性以及远程调用product-service模块根据prodId查询相关sku信息并封装到carItem对象中
+                    //  通过复制Basket的属性以及远程调用product-service模块根据prodId查询相关sku信息并封装到carItem对象中
                     BeanUtils.copyProperties(basket, cartItem);
                     skuAllList.forEach(sku -> {
                         if (sku.getSkuId().equals(basket.getSkuId())) {
@@ -168,56 +122,10 @@ public class BasketServiceImpl extends ServiceImpl<BasketMapper, Basket> impleme
                 .in(Basket::getBasketId, basketId)
         );
 
-        //List<Long> skuIdList = basketList.stream().map(Basket::getSkuId).collect(Collectors.toList());
+        List<Long> skuIdList = basketList.stream().map(Basket::getSkuId).collect(Collectors.toList());
 
         // 远程调用 获取订单对应的sku的价格
-        //List<Sku> skuAllList = searchProductFeign.getSkuListRemoteBySkuIds(skuIdList);
-
-        List<Sku> skuAllList = new ArrayList<>();
-        String json1 = "  {\n" +
-                "    \"skuId\": 440,\n" +
-                "    \"prodId\": 102,\n" +
-                "    \"properties\": \"颜色:黄\",\n" +
-                "    \"oriPrice\": 28997,\n" +
-                "    \"price\": 18999,\n" +
-                "    \"stocks\": 10,\n" +
-                "    \"actualStocks\": null,\n" +
-                "    \"updateTime\": \"2023-06-28 16:18:43\",\n" +
-                "    \"createTime\": \"2023-06-28 16:18:43\",\n" +
-                "    \"modelId\": null,\n" +
-                "    \"pic\": \"https://cqh-power-shop.oss-cn-guangzhou.aliyuncs.com/images/72f9021b-e6f8-4b18-98ab-836d45881656.jpg\",\n" +
-                "    \"skuName\": \"黄 \",\n" +
-                "    \"prodName\": \"华硕 （ASUS） TUF-GeForce RTX 4090-O24G-GAMING 黄 \",\n" +
-                "    \"version\": 0,\n" +
-                "    \"weight\": 1,\n" +
-                "    \"volume\": 1,\n" +
-                "    \"status\": 1\n" +
-                "  }";
-        Sku sku1 = JSON.parseObject(json1, Sku.class);
-
-        String json2 = "{\n" +
-                "    \"skuId\": 441,\n" +
-                "    \"prodId\": 102,\n" +
-                "    \"properties\": \"颜色:蓝\",\n" +
-                "    \"oriPrice\": 28999,\n" +
-                "    \"price\": 28999,\n" +
-                "    \"stocks\": 10,\n" +
-                "    \"actualStocks\": null,\n" +
-                "    \"updateTime\": \"2023-06-28 16:18:43\",\n" +
-                "    \"createTime\": \"2023-06-28 16:18:43\",\n" +
-                "    \"modelId\": null,\n" +
-                "    \"pic\": \"https://cqh-power-shop.oss-cn-guangzhou.aliyuncs.com/images/29ced49c-c2ca-4f38-a308-e1dbc21ea51f.jpg\",\n" +
-                "    \"skuName\": \"蓝 \",\n" +
-                "    \"prodName\": \"华硕 （ASUS） TUF-GeForce RTX 4090-O24G-GAMING 蓝 \",\n" +
-                "    \"version\": 0,\n" +
-                "    \"weight\": 1,\n" +
-                "    \"volume\": 1,\n" +
-                "    \"status\": 1\n" +
-                "  }";
-        Sku sku2 = JSON.parseObject(json2, Sku.class);
-
-        skuAllList.add(sku1);
-        skuAllList.add(sku2);
+        List<Sku> skuAllList = searchProductFeign.getSkuListRemoteBySkuIds(skuIdList);
 
         List<BigDecimal> totalList = new ArrayList<>();
         basketList.forEach(basket -> {
