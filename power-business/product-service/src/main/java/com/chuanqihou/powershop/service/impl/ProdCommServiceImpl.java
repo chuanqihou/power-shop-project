@@ -1,5 +1,6 @@
 package com.chuanqihou.powershop.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -69,9 +70,16 @@ public class ProdCommServiceImpl extends ServiceImpl<ProdCommMapper, ProdComm> i
         return prodCommOverviewVo;
     }
 
+    /**
+     * 查询商品评论详细信息
+     * @param page 分页条件
+     * @param prodComm 评论中的商品id
+     * @return
+     */
     @Override
     public Page<ProdCommVO> findWxProdCommCount(Page<ProdComm> page, ProdComm prodComm) {
         Integer evaluate = prodComm.getEvaluate();
+        // 根据条件分页查询
         Page<ProdComm> prodCommPage = prodCommMapper.selectPage(page, new LambdaQueryWrapper<ProdComm>()
                 .eq(ProdComm::getProdId, prodComm.getProdId())
                 .eq(ProdComm::getStatus, 1)
@@ -85,7 +93,29 @@ public class ProdCommServiceImpl extends ServiceImpl<ProdCommMapper, ProdComm> i
         List<ProdComm> records = prodCommPage.getRecords();
         List<String> openidList = records.stream().map(ProdComm::getOpenId).collect(Collectors.toList());
         // RPC 根据评论内的openid获取用户头像和昵称信息
-        List<Member> memberList = productMemberFeign.getMemberListByRemoteAndOpenIds(openidList);
+        //List<Member> memberList = productMemberFeign.getMemberListByRemoteAndOpenIds(openidList);
+        List<Member> memberList = new ArrayList<>();
+        String json = "  {\n" +
+                "    \"id\": 6,\n" +
+                "    \"openId\": \"ohbMy6rgx3WFbMcwBxndKkqTcjDI\",\n" +
+                "    \"nickName\": \"传奇后\",\n" +
+                "    \"realName\": null,\n" +
+                "    \"userMail\": null,\n" +
+                "    \"payPassword\": null,\n" +
+                "    \"userMobile\": \"18774137163\",\n" +
+                "    \"updateTime\": \"2023-06-30 08:33:35\",\n" +
+                "    \"createTime\": \"2023-06-29 14:07:59\",\n" +
+                "    \"userRegip\": \"192.168.137.102\",\n" +
+                "    \"userLasttime\": \"2023-07-03 14:21:55\",\n" +
+                "    \"userLastip\": \"192.168.137.102\",\n" +
+                "    \"sex\": \"0\",\n" +
+                "    \"birthDate\": null,\n" +
+                "    \"pic\": \"https://thirdwx.qlogo.cn/mmopen/vi_32/qeuRr1yS5A1M7NK41g8ZJFS3xs5HZURj4PXbiaYhWhmhdlPTrwjtiaj9GsMzIcy3f6t2jEvYMOx9MY3Ad7rR7Heg/132\",\n" +
+                "    \"status\": 1,\n" +
+                "    \"score\": null\n" +
+                "  }";
+        Member member1 = JSON.parseObject(json, Member.class);
+        memberList.add(member1);
 
         List<ProdCommVO> prodCommVOS = new ArrayList<>();
         records.forEach(pc ->{
@@ -95,7 +125,7 @@ public class ProdCommServiceImpl extends ServiceImpl<ProdCommMapper, ProdComm> i
             for (Member member : memberList) {
                 if (pc.getOpenId().equals(member.getOpenId())) {
                     prodCommVO.setPic(member.getPic());
-                    prodCommVO.setNickName(pc.getProdName());
+                    prodCommVO.setNickName(member.getNickName());
                     break;
                 }
             }

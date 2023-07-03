@@ -9,9 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author 传奇后
@@ -102,6 +100,14 @@ public class CategoryController {
         categoryService.removeCategoryById(categoryId);
         // 返回结果
         return Result.success();
+    }
+
+    //===========================================
+
+    @GetMapping("/categoryInfo")
+    public Result<List<Category>> getCategoryInfoByParentId(String parentId) {
+        List<Category> categories = categoryService.findCategoryInfoByParentId(parentId);
+        return Result.success(categories);
     }
 
 }

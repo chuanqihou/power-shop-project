@@ -10,4 +10,8 @@ import com.chuanqihou.powershop.model.ProdEs;
  */
 public interface SearchProdService {
     Page<ProdEs> searchProdEsByTagIdPage(Long tagId, Integer size);
+
+    Page<ProdEs> searchProdByCategoryId(Long cateGoryId);
+
+    Page<ProdEs> searchProdPage(Page<ProdEs> page, String prodName, Long sort);
 }

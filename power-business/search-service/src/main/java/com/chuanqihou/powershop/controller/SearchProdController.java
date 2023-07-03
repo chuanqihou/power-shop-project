@@ -27,4 +27,10 @@ public class SearchProdController {
         return Result.success(prodEsPage);
     }
 
+    @GetMapping("/pageProd")
+    public Result<Page<ProdEs>> getProdByCategoryId(Long cateGoryId) {
+        Page<ProdEs> prodEsPage = searchProdService.searchProdByCategoryId(cateGoryId);
+        return Result.success(prodEsPage);
+    }
+
 }

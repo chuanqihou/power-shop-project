@@ -15,7 +15,7 @@ import java.util.List;
  * @description
  */
 @RestController
-@RequestMapping("/p/user/")
+@RequestMapping("/p/user")
 public class MemberController {
 
     @Autowired
@@ -29,6 +29,16 @@ public class MemberController {
 
     @PostMapping("/getMemberListByRemoteAndOpenIds")
     public List<Member> getMemberListByRemoteAndOpenIds(@RequestBody List<String> openIds){
+        System.out.println("==========="+openIds);
+        List<Member> list = memberService.list(new LambdaQueryWrapper<Member>()
+                .in(Member::getOpenId, openIds)
+        );
+        System.out.println("======="+list);
+        return list;
+    }
+
+    @GetMapping("/getMemberListByRemoteAndOpenIds2")
+    public List<Member> getMemberListByRemoteAndOpenIds2(@RequestParam("openIds") List<String> openIds){
         System.out.println("==========="+openIds);
         List<Member> list = memberService.list(new LambdaQueryWrapper<Member>()
                 .in(Member::getOpenId, openIds)

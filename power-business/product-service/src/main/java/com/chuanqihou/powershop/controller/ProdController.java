@@ -1,17 +1,21 @@
 package com.chuanqihou.powershop.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chuanqihou.powershop.domain.Prod;
+import com.chuanqihou.powershop.domain.Sku;
 import com.chuanqihou.powershop.dto.ProdDTO;
 import com.chuanqihou.powershop.model.Result;
 import com.chuanqihou.powershop.service.ProdService;
-import com.chuanqihou.powershop.util.AuthUtil;
+import com.chuanqihou.powershop.service.SkuService;
 import com.chuanqihou.powershop.vo.ProdVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author 传奇后
@@ -28,6 +32,9 @@ public class ProdController {
      */
     @Autowired
     private ProdService prodService;
+
+    @Autowired
+    private SkuService skuService;
 
     /**
      * 分页查询商品信息
@@ -114,6 +121,14 @@ public class ProdController {
         ProdVo prodVo = prodService.findProdInfoByProdId(prodId);
 
         return Result.success(prodVo);
+    }
+
+    @PostMapping("/getSkuListRemoteBySkuIds")
+    public List<Sku> getSkuListRemoteBySkuIds(@RequestBody List<Long> skuIds){
+        System.out.println("RPC: "+skuIds);
+        return skuService.list(new LambdaQueryWrapper<Sku>()
+                .in(Sku::getSkuId, skuIds)
+        );
     }
 
 }

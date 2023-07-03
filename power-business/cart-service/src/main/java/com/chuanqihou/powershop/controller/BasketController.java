@@ -1,12 +1,15 @@
 package com.chuanqihou.powershop.controller;
 
+import com.chuanqihou.powershop.domain.Basket;
 import com.chuanqihou.powershop.model.Result;
 import com.chuanqihou.powershop.service.BasketService;
+import com.chuanqihou.powershop.vo.CartTotalMoneyVO;
 import com.chuanqihou.powershop.vo.CartVO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  * @author 传奇后
@@ -32,4 +35,23 @@ public class BasketController {
         return Result.success(cartVO);
     }
 
+    @PostMapping("/totalPay")
+    public Result<CartTotalMoneyVO> getTotalPay(@RequestBody List<Long> basketId) {
+
+        CartTotalMoneyVO cartTotalMoneyVO = basketService.findCartTotalPay(basketId);
+
+        return Result.success(cartTotalMoneyVO);
+    }
+
+    @DeleteMapping("/deleteItem")
+    public Result<Objects> eraseBasketByIds(@RequestBody List<Long> basketId) {
+        basketService.removeBasketByIds(basketId);
+        return Result.success();
+    }
+
+    @PostMapping("/changeItem")
+    public Result<Object> editBasketNum(@RequestBody Basket basket) {
+        basketService.modifyBasketNum(basket);
+        return Result.success();
+    }
 }

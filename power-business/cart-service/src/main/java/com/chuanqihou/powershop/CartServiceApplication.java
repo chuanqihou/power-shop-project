@@ -2,6 +2,7 @@ package com.chuanqihou.powershop;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 /**
  * @author 传奇后
@@ -9,6 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @description
  */
 @SpringBootApplication
+@EnableFeignClients
 public class CartServiceApplication {
 
     public static void main(String[] args) {

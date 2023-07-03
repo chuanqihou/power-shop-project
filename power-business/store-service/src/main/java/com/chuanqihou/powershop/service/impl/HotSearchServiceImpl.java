@@ -2,18 +2,18 @@ package com.chuanqihou.powershop.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.chuanqihou.powershop.domain.HotSearch;
+import com.chuanqihou.powershop.mapper.HotSearchMapper;
+import com.chuanqihou.powershop.service.HotSearchService;
 import com.chuanqihou.powershop.util.AuthUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import javax.annotation.Resource;
-import java.util.Date;
-import java.util.List;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.chuanqihou.powershop.mapper.HotSearchMapper;
-import com.chuanqihou.powershop.domain.HotSearch;
-import com.chuanqihou.powershop.service.HotSearchService;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author 传奇后
@@ -42,5 +42,14 @@ public class HotSearchServiceImpl extends ServiceImpl<HotSearchMapper, HotSearch
         hotSearch.setShopId(AuthUtil.getShopId());
         hotSearch.setCreateTime(new Date());
         hotSearchMapper.insert(hotSearch);
+    }
+
+    @Override
+    public List<HotSearch> findHotSearchKey(Long number, Long shopId, Long sort) {
+        return hotSearchMapper.selectList(new LambdaQueryWrapper<HotSearch>()
+                .eq(HotSearch::getShopId, shopId)
+                .eq(HotSearch::getStatus, 1)
+                .orderByDesc(HotSearch::getSeq)
+        );
     }
 }

@@ -20,4 +20,6 @@ public interface CategoryService extends IService<Category>{
     void modifyCategory(Category category);
 
     void removeCategoryById(Long categoryId);
+
+    List<Category> findCategoryInfoByParentId(String parentId);
 }

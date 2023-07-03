@@ -1,21 +1,27 @@
 package com.chuanqihou.powershop.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chuanqihou.powershop.domain.Basket;
+import com.chuanqihou.powershop.domain.Sku;
+import com.chuanqihou.powershop.feign.SearchProductFeign;
 import com.chuanqihou.powershop.mapper.BasketMapper;
 import com.chuanqihou.powershop.model.CartItem;
 import com.chuanqihou.powershop.model.ShopCart;
 import com.chuanqihou.powershop.service.BasketService;
 import com.chuanqihou.powershop.util.AuthUtil;
+import com.chuanqihou.powershop.vo.CartTotalMoneyVO;
 import com.chuanqihou.powershop.vo.CartVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -28,6 +34,9 @@ public class BasketServiceImpl extends ServiceImpl<BasketMapper, Basket> impleme
 
     @Autowired
     private BasketMapper basketMapper;
+
+    @Autowired
+    private SearchProductFeign searchProductFeign;
 
     @Override
     public Long findCartProdCount() {
@@ -55,6 +64,57 @@ public class BasketServiceImpl extends ServiceImpl<BasketMapper, Basket> impleme
                 .eq(Basket::getOpenId, openId)
         );
 
+        //RPC 根据skuId集合查询出对应的sku信息
+        // 获取skuId集合
+        List<Long> skuIdList = basketList.stream().map(Basket::getSkuId).collect(Collectors.toList());
+        // RPC 远程调用
+        //List<Sku> skuAllList = searchProductFeign.getSkuListRemoteBySkuIds(skuIdList);
+        List<Sku> skuAllList = new ArrayList<>();
+        String json1 = "  {\n" +
+                "    \"skuId\": 440,\n" +
+                "    \"prodId\": 102,\n" +
+                "    \"properties\": \"颜色:黄\",\n" +
+                "    \"oriPrice\": 28997,\n" +
+                "    \"price\": 18999,\n" +
+                "    \"stocks\": 10,\n" +
+                "    \"actualStocks\": null,\n" +
+                "    \"updateTime\": \"2023-06-28 16:18:43\",\n" +
+                "    \"createTime\": \"2023-06-28 16:18:43\",\n" +
+                "    \"modelId\": null,\n" +
+                "    \"pic\": \"https://cqh-power-shop.oss-cn-guangzhou.aliyuncs.com/images/72f9021b-e6f8-4b18-98ab-836d45881656.jpg\",\n" +
+                "    \"skuName\": \"黄 \",\n" +
+                "    \"prodName\": \"华硕 （ASUS） TUF-GeForce RTX 4090-O24G-GAMING 黄 \",\n" +
+                "    \"version\": 0,\n" +
+                "    \"weight\": 1,\n" +
+                "    \"volume\": 1,\n" +
+                "    \"status\": 1\n" +
+                "  }";
+        Sku sku1 = JSON.parseObject(json1, Sku.class);
+
+        String json2 = "{\n" +
+                "    \"skuId\": 441,\n" +
+                "    \"prodId\": 102,\n" +
+                "    \"properties\": \"颜色:蓝\",\n" +
+                "    \"oriPrice\": 28999,\n" +
+                "    \"price\": 28999,\n" +
+                "    \"stocks\": 10,\n" +
+                "    \"actualStocks\": null,\n" +
+                "    \"updateTime\": \"2023-06-28 16:18:43\",\n" +
+                "    \"createTime\": \"2023-06-28 16:18:43\",\n" +
+                "    \"modelId\": null,\n" +
+                "    \"pic\": \"https://cqh-power-shop.oss-cn-guangzhou.aliyuncs.com/images/29ced49c-c2ca-4f38-a308-e1dbc21ea51f.jpg\",\n" +
+                "    \"skuName\": \"蓝 \",\n" +
+                "    \"prodName\": \"华硕 （ASUS） TUF-GeForce RTX 4090-O24G-GAMING 蓝 \",\n" +
+                "    \"version\": 0,\n" +
+                "    \"weight\": 1,\n" +
+                "    \"volume\": 1,\n" +
+                "    \"status\": 1\n" +
+                "  }";
+        Sku sku2 = JSON.parseObject(json2, Sku.class);
+
+        skuAllList.add(sku1);
+        skuAllList.add(sku2);
+
         // 创建 List<ShopCart>对象
         List<ShopCart> shopCartList = new ArrayList<>();
 
@@ -74,8 +134,16 @@ public class BasketServiceImpl extends ServiceImpl<BasketMapper, Basket> impleme
                 if (basket.getShopId().equals(shopId)) {
                     // 在条件内创建 CartItem对象
                     CartItem cartItem = new CartItem();
-                    // TODO: 通过复制Basket的属性以及远程调用product-service模块根据prodId查询相关信息并封装到carItem对象中
+                    // TODO: 通过复制Basket的属性以及远程调用product-service模块根据prodId查询相关sku信息并封装到carItem对象中
                     BeanUtils.copyProperties(basket, cartItem);
+                    skuAllList.forEach(sku -> {
+                        if (sku.getSkuId().equals(basket.getSkuId())) {
+                            cartItem.setPic(sku.getPic());
+                            cartItem.setPrice(sku.getPrice());
+                            cartItem.setProdName(sku.getProdName());
+                            cartItem.setSkuName(sku.getSkuName());
+                        }
+                    });
                     // 将cartItem对象添加到 cartItemList集合中
                     cartItemList.add(cartItem);
                 }
@@ -91,5 +159,113 @@ public class BasketServiceImpl extends ServiceImpl<BasketMapper, Basket> impleme
         cartVO.setShopCarts(shopCartList);
         // 返回CartVO对象
         return cartVO;
+    }
+
+    @Override
+    public CartTotalMoneyVO findCartTotalPay(List<Long> basketId) {
+
+        List<Basket> basketList = basketMapper.selectList(new LambdaQueryWrapper<Basket>()
+                .in(Basket::getBasketId, basketId)
+        );
+
+        //List<Long> skuIdList = basketList.stream().map(Basket::getSkuId).collect(Collectors.toList());
+
+        // 远程调用 获取订单对应的sku的价格
+        //List<Sku> skuAllList = searchProductFeign.getSkuListRemoteBySkuIds(skuIdList);
+
+        List<Sku> skuAllList = new ArrayList<>();
+        String json1 = "  {\n" +
+                "    \"skuId\": 440,\n" +
+                "    \"prodId\": 102,\n" +
+                "    \"properties\": \"颜色:黄\",\n" +
+                "    \"oriPrice\": 28997,\n" +
+                "    \"price\": 18999,\n" +
+                "    \"stocks\": 10,\n" +
+                "    \"actualStocks\": null,\n" +
+                "    \"updateTime\": \"2023-06-28 16:18:43\",\n" +
+                "    \"createTime\": \"2023-06-28 16:18:43\",\n" +
+                "    \"modelId\": null,\n" +
+                "    \"pic\": \"https://cqh-power-shop.oss-cn-guangzhou.aliyuncs.com/images/72f9021b-e6f8-4b18-98ab-836d45881656.jpg\",\n" +
+                "    \"skuName\": \"黄 \",\n" +
+                "    \"prodName\": \"华硕 （ASUS） TUF-GeForce RTX 4090-O24G-GAMING 黄 \",\n" +
+                "    \"version\": 0,\n" +
+                "    \"weight\": 1,\n" +
+                "    \"volume\": 1,\n" +
+                "    \"status\": 1\n" +
+                "  }";
+        Sku sku1 = JSON.parseObject(json1, Sku.class);
+
+        String json2 = "{\n" +
+                "    \"skuId\": 441,\n" +
+                "    \"prodId\": 102,\n" +
+                "    \"properties\": \"颜色:蓝\",\n" +
+                "    \"oriPrice\": 28999,\n" +
+                "    \"price\": 28999,\n" +
+                "    \"stocks\": 10,\n" +
+                "    \"actualStocks\": null,\n" +
+                "    \"updateTime\": \"2023-06-28 16:18:43\",\n" +
+                "    \"createTime\": \"2023-06-28 16:18:43\",\n" +
+                "    \"modelId\": null,\n" +
+                "    \"pic\": \"https://cqh-power-shop.oss-cn-guangzhou.aliyuncs.com/images/29ced49c-c2ca-4f38-a308-e1dbc21ea51f.jpg\",\n" +
+                "    \"skuName\": \"蓝 \",\n" +
+                "    \"prodName\": \"华硕 （ASUS） TUF-GeForce RTX 4090-O24G-GAMING 蓝 \",\n" +
+                "    \"version\": 0,\n" +
+                "    \"weight\": 1,\n" +
+                "    \"volume\": 1,\n" +
+                "    \"status\": 1\n" +
+                "  }";
+        Sku sku2 = JSON.parseObject(json2, Sku.class);
+
+        skuAllList.add(sku1);
+        skuAllList.add(sku2);
+
+        List<BigDecimal> totalList = new ArrayList<>();
+        basketList.forEach(basket -> {
+            skuAllList.forEach(sku -> {
+                if (basket.getSkuId().equals(sku.getSkuId())) {
+                    BigDecimal multiply = sku.getPrice().multiply(new BigDecimal(basket.getProdCount()));
+                    totalList.add(multiply);
+                }
+            });
+        });
+
+        CartTotalMoneyVO cartTotalMoneyVO = new CartTotalMoneyVO();
+        Optional<BigDecimal> reduce = totalList.stream().reduce(BigDecimal::add);
+        if (reduce.isPresent()) {
+            BigDecimal bigDecimal = reduce.get();
+            cartTotalMoneyVO.setTotalMoney(bigDecimal);
+
+            if (bigDecimal.compareTo(new BigDecimal(88)) < 0) {
+                cartTotalMoneyVO.setTransMoney(new BigDecimal(12));
+            }
+
+            cartTotalMoneyVO.setFinalMoney(bigDecimal.add(cartTotalMoneyVO.getTransMoney()));
+
+        }
+
+        return cartTotalMoneyVO;
+    }
+
+    @Override
+    public void removeBasketByIds(List<Long> basketIds) {
+        int delete = basketMapper.delete(new LambdaQueryWrapper<Basket>()
+                .in(Basket::getBasketId, basketIds)
+        );
+        if (delete == 0) {
+            throw new RuntimeException("移除购物车商品失败！");
+        }
+    }
+
+    @Override
+    public void modifyBasketNum(Basket basket) {
+        Basket bk = basketMapper.selectOne(new LambdaQueryWrapper<Basket>()
+                .eq(Basket::getSkuId, basket.getSkuId())
+                .eq(Basket::getOpenId, AuthUtil.getLoginMemberOpenId())
+        );
+        bk.setProdCount(bk.getProdCount() + basket.getProdCount());
+        int updateById = basketMapper.updateById(bk);
+        if (updateById != 1) {
+            throw new RuntimeException("更新失败！");
+        }
     }
 }

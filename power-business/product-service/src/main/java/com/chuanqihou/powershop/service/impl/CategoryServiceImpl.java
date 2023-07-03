@@ -1,20 +1,21 @@
 package com.chuanqihou.powershop.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chuanqihou.powershop.constant.ProductConstant;
+import com.chuanqihou.powershop.domain.Category;
 import com.chuanqihou.powershop.domain.Prod;
 import com.chuanqihou.powershop.ex.ProductServiceException;
+import com.chuanqihou.powershop.mapper.CategoryMapper;
+import com.chuanqihou.powershop.service.CategoryService;
 import com.chuanqihou.powershop.service.ProdService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import javax.annotation.Resource;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
 import java.util.Date;
 import java.util.List;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.chuanqihou.powershop.domain.Category;
-import com.chuanqihou.powershop.mapper.CategoryMapper;
-import com.chuanqihou.powershop.service.CategoryService;
-import org.springframework.util.ObjectUtils;
 
 /**
  * @author 传奇后
@@ -74,4 +75,14 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
             throw new ProductServiceException("删除分类失败，请联系管理员！");
         }
     }
+
+    @Override
+    public List<Category> findCategoryInfoByParentId(String parentId) {
+        return categoryMapper.selectList(new LambdaQueryWrapper<Category>()
+                .eq(StringUtils.hasText(parentId), Category::getParentId, parentId)
+                .eq(Category::getStatus, 1)
+                .orderByDesc(Category::getSeq)
+        );
+    }
+
 }
