@@ -1,5 +1,6 @@
 package com.chuanqihou.powershop.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.chuanqihou.powershop.domain.MemberAddr;
 import com.chuanqihou.powershop.model.Result;
 import com.chuanqihou.powershop.service.MemberAddrService;
@@ -56,6 +57,16 @@ public class MemberAddrController {
     public Result<Object> cutMemberAddrById(@PathVariable("addrId") Long addrId) {
         memberAddrService.removeSoftMemberAddrById(addrId,AuthUtil.getLoginMemberOpenId());
         return Result.success();
+    }
+
+    @GetMapping("/getMemberAddrByOpenId")
+    MemberAddr getMemberAddrRemoteByOpenId(@RequestParam("loginMemberOpenId") String loginMemberOpenId,@RequestParam("addrId") Long addrId){
+        return memberAddrService.list(new LambdaQueryWrapper<MemberAddr>()
+                .eq(MemberAddr::getOpenId, loginMemberOpenId)
+                .eq(addrId.equals(0L),MemberAddr::getCommonAddr, 1)
+                .eq(!addrId.equals(0L),MemberAddr::getAddrId, addrId)
+                .eq(MemberAddr::getStatus, 1)
+        ).get(0);
     }
 
 }

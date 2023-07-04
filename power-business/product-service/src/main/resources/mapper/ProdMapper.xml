@@ -26,8 +26,15 @@
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
-    prod_id, prod_name, shop_id, ori_price, price, brief, content, pic, imgs, `status`, 
-    category_id, sold_num, total_stocks, delivery_mode, delivery_template_id, create_time, 
+    prod_id, prod_name, shop_id, ori_price, price, brief, content, pic, imgs, `status`,
+    category_id, sold_num, total_stocks, delivery_mode, delivery_template_id, create_time,
     update_time, putaway_time, version
   </sql>
+
+  <update id="updateProdStockByProdId">
+    update prod set total_stocks = total_stocks+#{prodCount,jdbcType=INTEGER},
+                    sold_num = sold_num - #{prodCount,jdbcType=INTEGER},
+                    update_time = now()
+    where prod_id = #{prodId,jdbcType=BIGINT} and total_stocks + #{prodCount,jdbcType=INTEGER} >= 0
+  </update>
 </mapper>

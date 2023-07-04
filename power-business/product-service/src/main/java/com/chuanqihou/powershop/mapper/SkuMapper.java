@@ -2,6 +2,7 @@ package com.chuanqihou.powershop.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.chuanqihou.powershop.domain.Sku;
+import com.chuanqihou.powershop.model.SkuChange;
 import org.apache.ibatis.annotations.Mapper;
 
 
@@ -12,4 +13,5 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface SkuMapper extends BaseMapper<Sku> {
+    void updateSkuStockBySkuId(SkuChange skuChange);
 }

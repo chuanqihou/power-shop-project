@@ -2,6 +2,7 @@ package com.chuanqihou.powershop.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.chuanqihou.powershop.domain.Prod;
+import com.chuanqihou.powershop.model.ProdChange;
 import org.apache.ibatis.annotations.Mapper;
 
 
@@ -12,4 +13,5 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface ProdMapper extends BaseMapper<Prod> {
+    void updateProdStockByProdId(ProdChange prodChange);
 }

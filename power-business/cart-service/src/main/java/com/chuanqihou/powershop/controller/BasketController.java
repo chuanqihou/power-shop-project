@@ -1,5 +1,6 @@
 package com.chuanqihou.powershop.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.chuanqihou.powershop.domain.Basket;
 import com.chuanqihou.powershop.model.Result;
 import com.chuanqihou.powershop.service.BasketService;
@@ -54,4 +55,20 @@ public class BasketController {
         basketService.modifyBasketNum(basket);
         return Result.success();
     }
+
+    @GetMapping("/getBasketListRemoteByBasketIds")
+    List<Basket> getBasketListRemoteByBasketIds(@RequestParam("basketIds") List<Long> basketIds) {
+        return basketService.list(new LambdaQueryWrapper<Basket>()
+                .in(Basket::getBasketId, basketIds)
+        );
+    }
+
+    @PostMapping("/removeCartByOpenIdAndSkuId")
+    void removeCartByOpenIdAndSkuId(@RequestParam("openId") String openId, @RequestBody List<Long> skuIdList) {
+        basketService.remove(new LambdaQueryWrapper<Basket>()
+                .in(Basket::getSkuId, skuIdList)
+                .eq(Basket::getOpenId, openId)
+        );
+    }
+
 }

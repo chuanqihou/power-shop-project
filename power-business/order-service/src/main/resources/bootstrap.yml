@@ -22,6 +22,11 @@ spring:
   profiles:
     active: dev # 激活的环境
 
+#snowflake:
+#  config:
+#    workerId: 1
+#    dataCenterId: 1
+
 #server:
 #  port: 9013
 #swagger3:

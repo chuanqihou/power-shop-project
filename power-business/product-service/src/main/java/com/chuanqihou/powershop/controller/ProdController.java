@@ -6,6 +6,7 @@ import com.chuanqihou.powershop.domain.Prod;
 import com.chuanqihou.powershop.domain.Sku;
 import com.chuanqihou.powershop.dto.ProdDTO;
 import com.chuanqihou.powershop.model.Result;
+import com.chuanqihou.powershop.model.StockChange;
 import com.chuanqihou.powershop.service.ProdService;
 import com.chuanqihou.powershop.service.SkuService;
 import com.chuanqihou.powershop.vo.ProdVo;
@@ -129,6 +130,12 @@ public class ProdController {
         return skuService.list(new LambdaQueryWrapper<Sku>()
                 .in(Sku::getSkuId, skuIds)
         );
+    }
+
+    @PostMapping("/changeStock")
+    void changeStock(@RequestBody StockChange stockChange) {
+        // 更改 sku、prod 表中对应的库存
+        prodService.changeStock(stockChange);
     }
 
 }

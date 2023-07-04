@@ -1,13 +1,33 @@
 package com.chuanqihou.powershop.service.impl;
 
+import cn.hutool.core.lang.Snowflake;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.chuanqihou.powershop.domain.Order;
+import com.chuanqihou.powershop.domain.*;
+import com.chuanqihou.powershop.dto.OrderConfirmDTO;
+import com.chuanqihou.powershop.feign.OrderCartFeign;
+import com.chuanqihou.powershop.feign.OrderMemberFeign;
+import com.chuanqihou.powershop.feign.OrderProductFeign;
 import com.chuanqihou.powershop.mapper.OrderMapper;
+import com.chuanqihou.powershop.model.ProdChange;
+import com.chuanqihou.powershop.model.ShopCartOrder;
+import com.chuanqihou.powershop.model.SkuChange;
+import com.chuanqihou.powershop.model.StockChange;
 import com.chuanqihou.powershop.service.OrderService;
 import com.chuanqihou.powershop.util.AuthUtil;
+import com.chuanqihou.powershop.vo.OrderConfirmVO;
 import com.chuanqihou.powershop.vo.OrderStatusCountVO;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author 传奇后
@@ -20,8 +40,261 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     @Autowired
     private OrderMapper orderMapper;
 
+    @Autowired
+    private OrderMemberFeign orderMemberFeign;
+
+    @Autowired
+    private OrderProductFeign orderProductFeign;
+
+    @Autowired
+    private OrderCartFeign orderCartFeign;
+
+    @Autowired
+    private Snowflake snowflake;
+
     @Override
     public OrderStatusCountVO findOrderStatusCount() {
         return orderMapper.selectOrderStatusCountByOpenId(AuthUtil.getLoginMemberOpenId());
     }
+
+    @Override
+    public OrderConfirmVO confirmOrder(OrderConfirmDTO orderConfirmDTO) {
+        // 获取商品详情对象 记 orderItem
+        OrderItem orderItem = orderConfirmDTO.getOrderItem();
+
+        // 创建OrderConfirmVO对象 记 orderConfirmVO
+        OrderConfirmVO orderConfirmVO = new OrderConfirmVO();
+
+        // 通过用户openid 远程调用member-service服务，获取用户的默认收货地址 记 memberAddr
+        MemberAddr memberAddr = orderMemberFeign.getMemberAddrRemoteByOpenId(AuthUtil.getLoginMemberOpenId(),orderConfirmDTO.getAddrId());
+        // 将memberAddr设置到orderConfirmVO对象中
+        orderConfirmVO.setMemberAddr(memberAddr);
+
+        //  判断该对象，区分入口（商品详情页、购物车页面）
+        if (!ObjectUtils.isEmpty(orderItem)) {
+            // 用户从商品详情页确定订单
+
+            // 创建List<ShopCartOrder>店铺集合 记 shopCartOrderList
+            List<ShopCartOrder> shopCartOrderList = new ArrayList<>();
+            // 创建ShopCartOrder对象 记 shopCartOrder
+            ShopCartOrder shopCartOrder = new ShopCartOrder();
+            // 创建List<OrderItem>商品条目集合 记 shopCartItemDiscounts
+            List<OrderItem> shopCartItemDiscounts = new ArrayList<>();
+            // 通过orderItem对象获取skuId
+            Long skuId = orderItem.getSkuId();
+            // 远程调用 product-service 服务 同skuId获取Sku对象 记sku
+            Sku sku = orderProductFeign.getSkuListRemoteBySkuIds(Arrays.asList(skuId)).get(0);
+            // 将sku对象中的属性复制到orderItem对象中
+            BeanUtils.copyProperties(sku, orderItem);
+            // 将orderItem对象添加到shopCartItemDiscounts集合中
+            shopCartItemDiscounts.add(orderItem);
+            // 将shopCartItemDiscount对象添加到 shopCartOrder对象中
+            shopCartOrder.setShopCartItemDiscounts(shopCartItemDiscounts);
+            // 将shopCartOrder对象添加到 shopCartOrderList店铺集合中
+            shopCartOrderList.add(shopCartOrder);
+            // 将shopCartOrderList设置到orderConfirmVO对象中
+            orderConfirmVO.setShopCartOrders(shopCartOrderList);
+
+            // 从orderItem中获取订单商品总数量
+            Integer prodCount = orderItem.getProdCount();
+            orderConfirmVO.setTotalCount(prodCount);
+
+            // 计算商品总金额
+            BigDecimal totalMoney = orderItem.getPrice().multiply(new BigDecimal(prodCount));
+
+            BigDecimal transfee = new BigDecimal(0);
+            // 判断是否需要运费，需要则设置
+            if (totalMoney.compareTo(new BigDecimal(88)) < 0) {
+                transfee = new BigDecimal(12);
+                orderConfirmVO.setTransfee(transfee);
+            }
+
+            // 计算订单的实际总金额
+            BigDecimal actualTotal = totalMoney.add(transfee);
+
+            // 将商品总金额、实际总金额添加到orderConfirmVO对象中
+            orderConfirmVO.setTotalMoney(totalMoney);
+            orderConfirmVO.setActualTotal(actualTotal);
+
+            return orderConfirmVO;
+
+        }
+
+        // 获取所有购物车id结合
+        List<Long> basketIds = orderConfirmDTO.getBasketIds();
+
+        // 远程调用 RPC 根据basketIds查询 出对应的basket对象
+        List<Basket> basketList = orderCartFeign.getBasketListRemoteByBasketIds(basketIds);
+
+        List<Long> skuIdList = basketList.stream().map(Basket::getSkuId).collect(Collectors.toList());
+
+        List<Sku> skuList = orderProductFeign.getSkuListRemoteBySkuIds(skuIdList);
+
+        Map<Long, List<Basket>> groupBasketListByShopId = basketList.stream().collect(Collectors.groupingBy(Basket::getShopId));
+
+        // 创建List<ShopCartOrder>店铺集合 记 shopCartOrderList
+        List<ShopCartOrder> shopCartOrderList = new ArrayList<>();
+
+        List<Integer> prodCountList = new ArrayList<>();
+        List<BigDecimal> totalMoneyList = new ArrayList<>();
+
+        groupBasketListByShopId.forEach((shopId,eachBasketList)->{
+            ShopCartOrder shopCartOrder = new ShopCartOrder();
+            List<OrderItem> orderItemList = new ArrayList<>();
+
+            eachBasketList.forEach(basket -> {
+                skuList.forEach(sku -> {
+                    if (sku.getSkuId().equals(basket.getSkuId())) {
+                        OrderItem orderIt = new OrderItem();
+                        BeanUtils.copyProperties(basket, orderIt);
+                        BeanUtils.copyProperties(sku, orderIt);
+                        orderItemList.add(orderIt);
+
+                        prodCountList.add(orderIt.getProdCount());
+                        totalMoneyList.add(orderIt.getPrice().multiply(new BigDecimal(orderIt.getProdCount())));
+                    }
+                });
+            });
+
+            shopCartOrder.setShopCartItemDiscounts(orderItemList);
+            shopCartOrderList.add(shopCartOrder);
+        });
+
+        // 将shopCartOrderList设置到orderConfirmVO对象中
+        orderConfirmVO.setShopCartOrders(shopCartOrderList);
+
+        // 从orderItem中获取订单商品总数量
+        Integer prodCount = prodCountList.stream().mapToInt(Integer::intValue).sum();
+        orderConfirmVO.setTotalCount(prodCount);
+
+        // 计算商品总金额
+        BigDecimal totalMoney = totalMoneyList.stream().reduce(BigDecimal::add).get();
+
+        BigDecimal transfee = new BigDecimal(0);
+        // 判断是否需要运费，需要则设置
+        if (totalMoney.compareTo(new BigDecimal(88)) < 0) {
+            transfee = new BigDecimal(12);
+            orderConfirmVO.setTransfee(transfee);
+        }
+
+        // 计算订单的实际总金额
+        BigDecimal actualTotal = totalMoney.add(transfee);
+
+        // 将商品总金额、实际总金额添加到orderConfirmVO对象中
+        orderConfirmVO.setTotalMoney(totalMoney);
+        orderConfirmVO.setActualTotal(actualTotal);
+
+        return orderConfirmVO;
+
+    }
+
+    /**
+     * 提交订单
+     * @param orderConfirmVO 提交数据
+     * @return 订单编号
+     */
+    @Override
+    public String submitOrder(OrderConfirmVO orderConfirmVO) {
+
+        // 生成唯一订单编号（这里使用雪花算法）
+        String orderNum = generateOrderNumber();
+
+        // 将对应购物车内的以确定的订单商品移除
+        cleanCart(orderConfirmVO.getShopCartOrders());
+
+        // 扣减库存（mysql）
+        StockChange stockChange = reduceMysqlStock(orderConfirmVO.getShopCartOrders());
+
+        // 扣减库存（ES）
+
+
+        // TODO: 封装订单数据，往订单表中插入一条数据
+
+        // TODO: 延迟队列，若订单未支付、取消等需要回滚数据（库存）
+
+        return orderNum;
+    }
+
+    /**
+     * 移除购物车中已经提交订单的商品
+     * @param shopCartOrders 店铺订单对象集合
+     */
+    private void cleanCart(List<ShopCartOrder> shopCartOrders) {
+        List<Long> skuIdList = new ArrayList<>();
+        shopCartOrders.forEach(shopCartOrder -> {
+            List<OrderItem> shopCartItemDiscounts = shopCartOrder.getShopCartItemDiscounts();
+            shopCartItemDiscounts.forEach(orderItem -> {
+                skuIdList.add(orderItem.getSkuId());
+            });
+        });
+        if (CollectionUtils.isEmpty(skuIdList)) {
+            return;
+        }
+        String openId = AuthUtil.getLoginMemberOpenId();
+        // RPC 远程调用 cart-service 服务 根据skuId移除购物车中的商品
+        orderCartFeign.removeCartByOpenIdAndSkuId(openId, skuIdList);
+    }
+
+    /**
+     * 扣减库存（mysql）
+     * @param shopCartOrders 店铺订单对象
+     * @return 库存扣减信息
+     */
+    private StockChange reduceMysqlStock(List<ShopCartOrder> shopCartOrders) {
+        StockChange stockChange = new StockChange();
+        List<ProdChange> prodChangeList = new ArrayList<>();
+        List<SkuChange> skuChangeList = new ArrayList<>();
+
+        // 封装信息到prodChangeList 和 skuChangeList
+        shopCartOrders.forEach(shopCartOrder -> {
+            // 获取 商品条目集合
+            List<OrderItem> shopCartItemDiscounts = shopCartOrder.getShopCartItemDiscounts();
+            // 遍历 商品条目集合
+            shopCartItemDiscounts.forEach(orderItem -> {
+                // 获取商品购买数量
+                Integer prodCount = orderItem.getProdCount() * -1;
+                // 获取商品的skuId
+                Long skuId = orderItem.getSkuId();
+                // 封装 skuId 和 prodCount 到 skuChange对象中
+                SkuChange skuChange = new SkuChange();
+                skuChange.setSkuId(skuId);
+                skuChange.setProdCount(prodCount);
+
+                List<ProdChange> prodChanges = prodChangeList.stream().filter(prodChange -> prodChange.getProdId().equals(orderItem.getProdId())).collect(Collectors.toList());
+                // 根据商品id判断是否第一次添加
+                if (CollectionUtils.isEmpty(prodChanges)) {
+                    // 如果是第一次添加该商品，则创建prodChange对象
+                    ProdChange prodChange = new ProdChange();
+                    // 直接封装 prodId 和 prodCount 信息
+                    prodChange.setProdId(orderItem.getProdId());
+                    prodChange.setProdCount(prodCount);
+                    // 添加到集合中
+                    prodChangeList.add(prodChange);
+                }else {
+                    // 如果 prodChangeList集合中已有该商品id，则直接获取该prodChange对象
+                    ProdChange prodChange = prodChanges.get(0);
+                    // 重新设置该商品购买的总数量（记该商品下所有sku的购买数量之和）
+                    prodChange.setProdCount(prodChange.getProdCount() + prodCount);
+                }
+            });
+        });
+        // 封装到stockChange对象中
+        stockChange.setProdChangeList(prodChangeList);
+        stockChange.setSkuChangeList(skuChangeList);
+
+        // RPC 远程调用，修改prod表和sku表对应商品的库存信息
+        orderProductFeign.changeStock(stockChange);
+
+        // 返回
+        return stockChange;
+    }
+
+    /**
+     * 使用雪花算法生成订单编号
+     * @return 订单编号
+     */
+    private String generateOrderNumber() {
+        return snowflake.nextIdStr();
+    }
+
 }

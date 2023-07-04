@@ -4,13 +4,23 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chuanqihou.powershop.constant.ProductConstant;
-import com.chuanqihou.powershop.domain.*;
+import com.chuanqihou.powershop.domain.Prod;
+import com.chuanqihou.powershop.domain.ProdComm;
+import com.chuanqihou.powershop.domain.ProdTagReference;
+import com.chuanqihou.powershop.domain.Sku;
 import com.chuanqihou.powershop.dto.ProdDTO;
 import com.chuanqihou.powershop.ex.ProductServiceException;
 import com.chuanqihou.powershop.mapper.ProdCommMapper;
+import com.chuanqihou.powershop.mapper.ProdMapper;
 import com.chuanqihou.powershop.mapper.ProdTagReferenceMapper;
+import com.chuanqihou.powershop.mapper.SkuMapper;
+import com.chuanqihou.powershop.model.ProdChange;
 import com.chuanqihou.powershop.model.ProdEs;
+import com.chuanqihou.powershop.model.SkuChange;
+import com.chuanqihou.powershop.model.StockChange;
+import com.chuanqihou.powershop.service.ProdService;
 import com.chuanqihou.powershop.service.ProdTagReferenceService;
 import com.chuanqihou.powershop.service.SkuService;
 import com.chuanqihou.powershop.util.AuthUtil;
@@ -18,22 +28,16 @@ import com.chuanqihou.powershop.vo.ProdVo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import javax.annotation.Resource;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Delayed;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.chuanqihou.powershop.mapper.ProdMapper;
-import com.chuanqihou.powershop.service.ProdService;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * @author 传奇后
@@ -57,6 +61,9 @@ public class ProdServiceImpl extends ServiceImpl<ProdMapper, Prod> implements Pr
 
     @Autowired
     private ProdCommMapper prodCommMapper;
+
+    @Autowired
+    private SkuMapper skuMapper;
 
 
     @Override
@@ -327,5 +334,21 @@ public class ProdServiceImpl extends ServiceImpl<ProdMapper, Prod> implements Pr
         prodVo.setSkuList(skuList);
 
         return prodVo;
+    }
+
+    @Override
+    public void changeStock(StockChange stockChange) {
+        List<SkuChange> skuChangeList = stockChange.getSkuChangeList();
+        List<ProdChange> prodChangeList = stockChange.getProdChangeList();
+        // 修改sku表库存
+        skuChangeList.forEach(skuChange -> {
+            skuMapper.updateSkuStockBySkuId(skuChange);
+        });
+
+        // 修改prod表库存
+        prodChangeList.forEach(prodChange -> {
+            prodMapper.updateProdStockByProdId(prodChange);
+        });
+
     }
 }

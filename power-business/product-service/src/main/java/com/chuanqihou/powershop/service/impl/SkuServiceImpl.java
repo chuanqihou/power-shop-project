@@ -1,12 +1,14 @@
 package com.chuanqihou.powershop.service.impl;
 
-import org.springframework.stereotype.Service;
-import javax.annotation.Resource;
-import java.util.List;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chuanqihou.powershop.domain.Sku;
 import com.chuanqihou.powershop.mapper.SkuMapper;
+import com.chuanqihou.powershop.model.SkuChange;
 import com.chuanqihou.powershop.service.SkuService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * @author 传奇后
