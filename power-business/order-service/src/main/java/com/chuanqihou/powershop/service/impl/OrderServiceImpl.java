@@ -16,6 +16,10 @@ import com.chuanqihou.powershop.service.OrderService;
 import com.chuanqihou.powershop.util.AuthUtil;
 import com.chuanqihou.powershop.vo.OrderConfirmVO;
 import com.chuanqihou.powershop.vo.OrderStatusCountVO;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.client.producer.SendCallback;
+import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,6 +38,7 @@ import java.util.stream.Collectors;
  * @date 2023/6/25 10:35
  * @description
  */
+@Slf4j
 @Service
 public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements OrderService{
 
@@ -51,6 +56,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     @Autowired
     private Snowflake snowflake;
+
+    @Autowired
+    private RocketMQTemplate rocketMQTemplate;
 
     @Override
     public OrderStatusCountVO findOrderStatusCount() {
@@ -203,10 +211,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         cleanCart(orderConfirmVO.getShopCartOrders());
 
         // 扣减库存（mysql）
-        StockChange stockChange = reduceMysqlStock(orderConfirmVO.getShopCartOrders());
+        StockChange stockChange = changeMysqlStock(orderConfirmVO.getShopCartOrders());
 
         // 扣减库存（ES）
-
+        changeEsStock(stockChange.getProdChangeList());
 
         // TODO: 封装订单数据，往订单表中插入一条数据
 
@@ -214,6 +222,25 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
         return orderNum;
     }
+
+    /**
+     * 使用消息队列异步更新es库存
+     * @param prodChangeList 店铺订单对象集合
+     */
+    private void changeEsStock(List<ProdChange> prodChangeList) {
+        rocketMQTemplate.asyncSend("prodEs-update-topic", prodChangeList, new SendCallback() {
+            @Override
+            public void onSuccess(SendResult sendResult) {
+                log.info("【prodEs-update-topic】消息发送成功");
+            }
+            @Override
+            public void onException(Throwable throwable) {
+                log.info("【prodEs-update-topic】消息发送失败");
+            }
+        });
+    }
+
+
 
     /**
      * 移除购物车中已经提交订单的商品
@@ -240,7 +267,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
      * @param shopCartOrders 店铺订单对象
      * @return 库存扣减信息
      */
-    private StockChange reduceMysqlStock(List<ShopCartOrder> shopCartOrders) {
+    private StockChange changeMysqlStock(List<ShopCartOrder> shopCartOrders) {
         StockChange stockChange = new StockChange();
         List<ProdChange> prodChangeList = new ArrayList<>();
         List<SkuChange> skuChangeList = new ArrayList<>();

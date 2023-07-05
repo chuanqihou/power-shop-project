@@ -21,7 +21,11 @@ spring:
             refresh: true
   profiles:
     active: dev # 激活的环境
-
+rocketmq:
+  consumer:
+    group: order_consumer_group
+  producer:
+    group: order_consumer_group
 #snowflake:
 #  config:
 #    workerId: 1
