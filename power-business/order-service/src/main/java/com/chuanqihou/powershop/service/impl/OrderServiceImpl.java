@@ -1,6 +1,7 @@
 package com.chuanqihou.powershop.service.impl;
 
 import cn.hutool.core.lang.Snowflake;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chuanqihou.powershop.domain.*;
 import com.chuanqihou.powershop.dto.OrderConfirmDTO;
@@ -12,6 +13,7 @@ import com.chuanqihou.powershop.model.ProdChange;
 import com.chuanqihou.powershop.model.ShopCartOrder;
 import com.chuanqihou.powershop.model.SkuChange;
 import com.chuanqihou.powershop.model.StockChange;
+import com.chuanqihou.powershop.service.OrderItemService;
 import com.chuanqihou.powershop.service.OrderService;
 import com.chuanqihou.powershop.util.AuthUtil;
 import com.chuanqihou.powershop.vo.OrderConfirmVO;
@@ -20,17 +22,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
+import org.apache.rocketmq.spring.support.RocketMQHeaders;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -59,6 +61,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     @Autowired
     private RocketMQTemplate rocketMQTemplate;
+
+    @Autowired
+    private OrderItemService orderItemService;
 
     @Override
     public OrderStatusCountVO findOrderStatusCount() {
@@ -216,11 +221,108 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         // 扣减库存（ES）
         changeEsStock(stockChange.getProdChangeList());
 
-        // TODO: 封装订单数据，往订单表中插入一条数据
+        // 封装订单数据，往订单表和订单详细表中插入数据
+        saveOrder(orderConfirmVO,AuthUtil.getLoginMemberOpenId(),orderNum,stockChange);
 
-        // TODO: 延迟队列，若订单未支付、取消等需要回滚数据（库存）
+        // 延迟队列，若订单未支付、取消等需要回滚数据（库存）
+        checkBackStock(stockChange,orderNum);
 
         return orderNum;
+    }
+
+    /**
+     * 延迟队列，若订单未支付、取消等需要回滚数据（库存）
+     * @param stockChange 库存对象
+     * @param orderNum 订单编号
+     */
+    private void checkBackStock(StockChange stockChange, String orderNum) {
+        // 创建Message对象，封装stockChange对象已经orderNum
+        Message<String> message = MessageBuilder
+                .withPayload(JSON.toJSONString(stockChange))
+                .setHeader(RocketMQHeaders.KEYS,orderNum)
+                .build();
+
+        // 发送异步延迟消息，回滚数据（30分钟后执行）
+        rocketMQTemplate.asyncSend("order-check-back-stock-topic", message, new SendCallback() {
+            @Override
+            public void onSuccess(SendResult sendResult) {
+                log.info("【order-check-back-stock-topic】发送消息成功");
+            }
+
+            @Override
+            public void onException(Throwable throwable) {
+                log.info("【order-check-back-stock-topic】发送消息失败");
+            }
+        }, 5000, 16);
+    }
+
+
+    /**
+     * 封装订单数据，往订单表和订单详细表中插入数据
+     * @param orderConfirmVO 前端提交的数据
+     * @param loginMemberOpenId 登录用户openId
+     * @param orderNum 订单号
+     * @param stockChange 库存对象
+     */
+    private void saveOrder(OrderConfirmVO orderConfirmVO, String loginMemberOpenId,String orderNum,StockChange stockChange) {
+        // 往 Order表中插入一条订单数据
+        // 获取订单商品总数
+        List<Integer> prodNumList = stockChange.getProdChangeList().stream().map(ProdChange::getProdCount).collect(Collectors.toList());
+        Integer prodNum = prodNumList.stream().mapToInt(Integer::intValue).sum();
+        // 创建一个Order对象 记 order 封装order数据
+        Order order = Order.builder()
+                .openId(loginMemberOpenId)
+                .orderNumber(orderNum)
+                //.totalMoney()
+                //.actualTotal()
+                .remarks(orderConfirmVO.getRemarks())
+                .status(1)
+                .addrOrderId(orderConfirmVO.getMemberAddr().getAddrId())
+                .productNums(prodNum)
+                .createTime(new Date())
+                .updateTime(new Date())
+                .isPayed(false)
+                .deleteStatus(0)
+                .build();
+
+        // 往order_item（订单详情表）中插入数据
+
+        // 获取skuIdList
+        List<Long> skuIdList = stockChange.getSkuChangeList().stream().map(SkuChange::getSkuId).collect(Collectors.toList());
+        // RPC 根据skuIdList 获取 SkuList集合
+        List<Sku> skuList = orderProductFeign.getSkuListRemoteBySkuIds(skuIdList);
+
+        // 记录总金额集合
+        List<BigDecimal> totalMoneyList = new ArrayList<>();
+
+        List<OrderItem> orderItemList = new ArrayList<>();
+        orderConfirmVO.getShopCartOrders().forEach(shopCartOrder -> {
+            // 遍历 orderItem
+            shopCartOrder.getShopCartItemDiscounts().forEach(orderItem -> {
+                skuList.forEach(sku -> {
+                    if (sku.getSkuId().equals(orderItem.getSkuId())) {
+                        // 复制 sku 属性到 orderItem
+                        BeanUtils.copyProperties(sku, orderItem);
+                        orderItem.setOrderNumber(orderNum);
+                        orderItem.setProductTotalAmount(sku.getPrice().multiply(new BigDecimal(orderItem.getProdCount())));
+                        // 获取商品金额,并添加
+                        totalMoneyList.add(orderItem.getPrice());
+                        // 将orderItem添加到orderItemList集合中
+                        orderItemList.add(orderItem);
+                    }
+                });
+            });
+        });
+        // 封装金额
+        BigDecimal totalMoney = totalMoneyList.stream().reduce(BigDecimal::add).get();
+        order.setTotalMoney(totalMoney);
+        order.setActualTotal(totalMoney);
+        // 执行插入
+        orderMapper.insert(order);
+
+        // 执行批量保存商品详情信息
+        orderItemService.saveBatch(orderItemList);
+
     }
 
     /**
@@ -286,7 +388,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                 SkuChange skuChange = new SkuChange();
                 skuChange.setSkuId(skuId);
                 skuChange.setProdCount(prodCount);
-
+                skuChangeList.add(skuChange);
+                // 对prodChangeList进行过滤，判断orderItem中的prodId对应的ProdChange是否已经在prodChanges集合中存在
                 List<ProdChange> prodChanges = prodChangeList.stream().filter(prodChange -> prodChange.getProdId().equals(orderItem.getProdId())).collect(Collectors.toList());
                 // 根据商品id判断是否第一次添加
                 if (CollectionUtils.isEmpty(prodChanges)) {
@@ -311,6 +414,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
         // RPC 远程调用，修改prod表和sku表对应商品的库存信息
         orderProductFeign.changeStock(stockChange);
+
+        // 还原 prodCount（将prodCount还原成正数）
+        stockChange.getSkuChangeList().forEach(skuChange -> {
+            skuChange.setProdCount(skuChange.getProdCount() * -1);
+        });
+        stockChange.getProdChangeList().forEach(prodChange -> {
+            prodChange.setProdCount(prodChange.getProdCount() * -1);
+        });
 
         // 返回
         return stockChange;

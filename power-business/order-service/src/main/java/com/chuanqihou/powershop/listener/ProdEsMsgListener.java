@@ -3,6 +3,7 @@ package com.chuanqihou.powershop.listener;
 import com.chuanqihou.powershop.dao.ProdEsDao;
 import com.chuanqihou.powershop.model.ProdChange;
 import com.chuanqihou.powershop.model.ProdEs;
+import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,10 @@ import java.util.List;
  * @date 2023/7/5 8:51
  * @description
  */
+@RocketMQMessageListener(
+        topic = "prodEs-update-topic",
+        consumerGroup = "order_consumer_es_flush_stock_group"
+)
 @Component
 public class ProdEsMsgListener implements RocketMQListener<List<ProdChange>> {
 

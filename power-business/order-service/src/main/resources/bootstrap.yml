@@ -26,6 +26,7 @@ rocketmq:
     group: order_consumer_group
   producer:
     group: order_consumer_group
+  name-server: localhost:9876
 #snowflake:
 #  config:
 #    workerId: 1
